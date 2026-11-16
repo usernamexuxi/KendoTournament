@@ -1,0 +1,13 @@
+# 실제 대회 서류(참가자 이름·도장·심판 명단)가 들어 있어 절대 올리지 않는다.
+rm/
+test_file/
+*.kendo
+
+.venv/
+build/
+dist/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
