@@ -6,6 +6,7 @@ from PySide6.QtCore import QPointF, QRectF, QSize, Qt, Signal
 from PySide6.QtGui import QBrush, QColor, QFont, QFontMetricsF, QPainter, QPen, QPixmap, QPolygonF
 from PySide6.QtWidgets import (
     QGraphicsItem,
+    QGraphicsLineItem,
     QGraphicsPixmapItem,
     QGraphicsPolygonItem,
     QGraphicsRectItem,
@@ -22,6 +23,7 @@ PX_PER_MM = 4.0
 PT_TO_MM = 0.3528
 PAGE_GAP_MM = 8.0
 LINE_PEN_WIDTH = 0.9
+DRAWING_MARGIN_MM = 6.0
 
 
 class BracketCanvas(QGraphicsView):
@@ -52,6 +54,22 @@ class BracketCanvas(QGraphicsView):
 
     def fit(self) -> None:
         self.fitInView(self.scene().sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
+
+    def fit_drawing(self) -> None:
+        """종이가 아니라 그려진 대진표(이름·선·띠)가 화면에 꽉 차게 맞춘다.
+
+        종이 전체를 맞추면 2명 대진처럼 작은 대진이 종이 가운데에 조그맣게 남아 「전체 보기」가 안 되는 것처럼 보였다(운영자).
+        선(이름 상자 테두리·대진 선)만 잰다. 종별 이름 띠는 종이 맨 위라 넣으면 작은 대진이 다시 작아지고, 이름은 화면 위에 따로 나온다.
+        """
+        drawing = QRectF()
+        for item in self.scene().items():
+            if isinstance(item, QGraphicsLineItem):
+                drawing = drawing.united(item.sceneBoundingRect())
+        if drawing.isEmpty():
+            self.fit()
+            return
+        margin = DRAWING_MARGIN_MM * PX_PER_MM
+        self.fitInView(drawing.adjusted(-margin, -margin, margin, margin), Qt.AspectRatioMode.KeepAspectRatio)
 
     def zoom(self, factor: float) -> None:
         """단추로 확대·축소한다. Ctrl+휠은 운영자가 모르는 경우가 많다."""

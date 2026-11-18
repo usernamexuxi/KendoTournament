@@ -96,6 +96,7 @@ def tournament_to_dict(t: Tournament) -> dict[str, Any]:
                 "age_from": r.age_from,
                 "age_to": r.age_to,
                 "age_name": r.age_name,
+                "name": r.name,
             }
             for r in t.rules
         ],
@@ -222,6 +223,8 @@ def tournament_from_dict(data: dict[str, Any]) -> Tournament:
                     r.get("age_from"),
                     r.get("age_to"),
                     r.get("age_name", ""),
+                    # 2026-11 이전 파일에는 요강 이름 칸이 없다. 없으면 학년 범위로 부르던 예전 제목 그대로 열린다.
+                    r.get("name", ""),
                 )
                 for r in data["rules"]
             ],

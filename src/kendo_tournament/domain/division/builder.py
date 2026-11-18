@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import Sequence
-from dataclasses import dataclass, replace
+from dataclasses import dataclass
 
 from kendo_tournament.domain.division.bye_notice import ByeReport, DivisionSize, bye_report
 from kendo_tournament.domain.division.grade import resolve_grade
@@ -51,7 +51,7 @@ class _Group:
 
     @property
     def label(self) -> str:
-        return replace(self.head, grade_from=self.grade_from, grade_to=self.grade_to).label
+        return self.head.with_grades(self.grade_from, self.grade_to).label
 
 
 def _in_range(grade: Grade | None, rule: DivisionRule) -> bool:

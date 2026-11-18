@@ -26,7 +26,7 @@ def test_단체전_규칙은_대회_종별_표_순서대로_먼저_생기고_팀
 
     teams = [Team("t1", "가 A", "가", ("p",), "남자 성인부"), Team("t2", "나 A", "나", ("q",), "여초등 1~3학년")]
     labels = [r.label for r in make_rules(PresetChoice((Event.TEAM,)), teams=teams)]
-    assert labels[0] == "혼성 초1~초3 단체전"
+    assert labels[0] == "혼성 초등 저학년부 단체전"
     assert labels[len(GWANGMYEONG_CHAIRMAN.team) - 1] == "남자 성인 단체전"
     assert labels[len(GWANGMYEONG_CHAIRMAN.team) :] == ["여자 초1~초3 단체전"]
 

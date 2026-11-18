@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from kendo_tournament.domain.division.category_label import Category, band_name, has_band_word, parse_category
+from kendo_tournament.domain.division.category_label import Category, band_name, group_name, has_band_word, parse_category
 from kendo_tournament.domain.model import ADULT, DivisionRule, Event, Grade, Team
 
 
@@ -52,6 +52,7 @@ def team_rules(
                 category.age_from,
                 category.age_to,
                 key[1],
+                group_name(label),
             )
         )
     return rules

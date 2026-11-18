@@ -337,3 +337,19 @@ def test_팀원_자리는_저장되고_없던_예전_파일은_자리_없이_읽
     del saved["teams"][0]["positions"]
     path.write_text(json.dumps(saved, ensure_ascii=False), encoding="utf-8")
     assert repo.load(path).teams[0].positions == ()
+
+
+def test_요강_이름이_저장되고_이름_칸이_없는_예전_파일은_학년_제목_그대로_열린다(tmp_path):
+    import json
+
+    repo = JsonTournamentRepository()
+    t = sample_tournament()
+    t.rules = [DivisionRule("r", Event.INDIVIDUAL, Gender.MALE, Grade(1), Grade(3), name="초등 저학년부")]
+    path = tmp_path / "새.kendo"
+    repo.save(t, path)
+    assert repo.load(path).rules[0].label == "남자 초등 저학년부 개인전"
+    saved = json.loads(path.read_text(encoding="utf-8"))
+    for rule in saved["rules"]:
+        del rule["name"]
+    path.write_text(json.dumps(saved, ensure_ascii=False), encoding="utf-8")
+    assert repo.load(path).rules[0].label == "남자 초1~초3 개인전"

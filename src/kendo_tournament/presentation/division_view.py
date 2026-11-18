@@ -159,6 +159,9 @@ class DivisionView(QWidget):
         for column, widget in cells.items():
             self._table.setCellWidget(row, column, widget)
         event.setProperty("rule_id", rule.id)
+        # 표에는 요강 이름 칸이 없다. 이름과 그 이름이 가리키던 학년 범위를 들고 있다가, 범위를 안 고쳤으면 다시 붙인다.
+        event.setProperty("rule_name", rule.name)
+        event.setProperty("named_span", (rule.grade_from.value, rule.grade_to.value))
         delete = button("삭제")
         delete.clicked.connect(lambda _=False, combo=event: self._delete_row_of(combo))
         self._table.setCellWidget(row, DELETE, delete)
@@ -176,18 +179,22 @@ class DivisionView(QWidget):
             cell = self._table.cellWidget
             event = cell(row, EVENT).value()
             age_from, age_to, age_name = rule_age(cell(row, AGE).text())
+            grade_from, grade_to = cell(row, FROM).value(), cell(row, TO).value()
+            span = cell(row, EVENT).property("named_span")
+            kept = span is not None and tuple(span) == (grade_from.value, grade_to.value)
             rules.append(
                 DivisionRule(
                     cell(row, EVENT).property("rule_id") or f"r{row + 1}",
                     event,
                     cell(row, GENDER).value(),
-                    cell(row, FROM).value(),
-                    cell(row, TO).value(),
+                    grade_from,
+                    grade_to,
                     None,
                     cell(row, MINIMUM).value(),
                     age_from,
                     age_to,
                     age_name,
+                    (cell(row, EVENT).property("rule_name") or "") if kept else "",
                 )
             )
         return rules

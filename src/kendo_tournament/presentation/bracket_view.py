@@ -64,7 +64,7 @@ class BracketView(QWidget):
         bigger, smaller, whole = button("＋ 크게"), button("－ 작게"), button("전체 보기")
         bigger.clicked.connect(lambda: self._canvas.zoom(ZOOM_STEP))
         smaller.clicked.connect(lambda: self._canvas.zoom(1 / ZOOM_STEP))
-        whole.clicked.connect(self._canvas.fit)
+        whole.clicked.connect(self._canvas.fit_drawing)
         self._pick_hint = QLabel()
         self._pick_hint.setObjectName("pickHint")
         self._pick_hint.setWordWrap(True)
@@ -143,7 +143,7 @@ class BracketView(QWidget):
         flagged = {slot for pair in conflicts for slot in pair}
         self._canvas.show_pages(pages_for([bracket]), picked, flagged)
         if fit:
-            self._canvas.fit()
+            self._canvas.fit_drawing()
 
     def _draw_all(self) -> None:
         if not self._session.tournament.divisions:

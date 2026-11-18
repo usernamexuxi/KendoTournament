@@ -24,3 +24,15 @@ def test_시장기_신청서_학년_선수는_자기_학년_부문에_든다():
     choice = PresetChoice((Event.INDIVIDUAL,), categories=GWANGMYEONG_MAYOR)
     result = build_divisions(people, [], make_rules(choice, participants=people))
     assert [(d.label, len(d.entries)) for d in result.divisions] == [("남자 초2 개인전", 2)]
+
+
+def test_저학년부_고학년부_틀의_초등_종별은_1에서3_4에서6학년이고_제목은_요강_이름이다():
+    from kendo_tournament.domain.division.category_label import group_name, parse_category
+    from kendo_tournament.domain.division.category_table import TEMPLATES
+
+    table = TEMPLATES["초등 저학년·고학년부"]
+    assert table.unreadable() == []
+    elementary = [label for label in (*table.individual, *table.team) if "학년부" in label]
+    spans = {(parse_category(label).grade_from, parse_category(label).grade_to) for label in elementary}
+    assert spans == {(1, 3), (4, 6)}
+    assert {group_name(label) for label in elementary} == {"초등 저학년부", "초등 고학년부"}

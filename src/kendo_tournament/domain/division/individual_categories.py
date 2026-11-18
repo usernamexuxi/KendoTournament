@@ -8,7 +8,13 @@ from __future__ import annotations
 
 from collections.abc import Sequence
 
-from kendo_tournament.domain.division.category_label import Category, band_name, fill_missing_gender, parse_category
+from kendo_tournament.domain.division.category_label import (
+    Category,
+    band_name,
+    fill_missing_gender,
+    group_name,
+    parse_category,
+)
 from kendo_tournament.domain.division.category_table import DEFAULT_CATEGORY_TABLE
 from kendo_tournament.domain.division.grade import grade_from_age
 from kendo_tournament.domain.division.team_categories import next_rule_id
@@ -106,6 +112,7 @@ def _rule(rule_id: str, category: Category, label: str, min_entries: int | None)
         category.age_from,
         category.age_to,
         band_name(label) if category.age_from is not None else "",
+        group_name(label),
     )
 
 

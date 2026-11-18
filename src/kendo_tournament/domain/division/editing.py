@@ -34,7 +34,7 @@ def merge_rules(rules: Sequence[DivisionRule], rule_ids: Sequence[str]) -> list[
     for lower, upper in zip(picked, picked[1:], strict=False):
         if upper.grade_from.value != lower.grade_to.value + 1:
             raise ValueError("학년이 이어지는 종별끼리만 합칠 수 있습니다. 사이에 낀 종별도 함께 골라 주세요.")
-    merged = replace(head, grade_to=picked[-1].grade_to)
+    merged = head.with_grades(head.grade_from, picked[-1].grade_to)
     removed = {rule.id for rule in picked}
     first_position = min(index for index, rule in enumerate(rules) if rule.id in removed)
     result = [rule for rule in rules if rule.id not in removed]
@@ -56,7 +56,8 @@ def split_rules(rules: Sequence[DivisionRule], rule_ids: Sequence[str]) -> list[
             continue
         for value in range(rule.grade_from.value, rule.grade_to.value + 1):
             rule_id = rule.id if value == rule.grade_from.value else _fresh_id(f"{rule.id}-{value}", used)
-            result.append(replace(rule, id=rule_id, grade_from=Grade(value), grade_to=Grade(value), min_entries=None))
+            single = rule.with_grades(Grade(value), Grade(value))
+            result.append(replace(single, id=rule_id, min_entries=None))
     return result
 
 

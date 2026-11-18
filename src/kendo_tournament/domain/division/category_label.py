@@ -96,6 +96,21 @@ def band_name(label: str) -> str:
     return _GENDER_PREFIX.sub("", text)
 
 
+def group_name(label: str) -> str:
+    """요강이 초등부를 「저학년부·고학년부」로 부르면 그 이름(「초등 저학년부」). 아니면 빈 글.
+
+    운영자: 요강의 초등부 이름이 학년 대신 저학년부·고학년부로 바뀔 수 있다 — 대진표 제목도 요강 이름을 따른다.
+    글이 가리키는 학년 범위가 그 이름의 범위(1~3·4~6)와 다르면 이름을 붙이지 않는다(「저학년 1~2학년」 같은 글).
+    """
+    category = parse_category(label)
+    if category is None:
+        return ""
+    for word, span in ELEMENTARY_HALVES:
+        if word in label and (category.grade_from, category.grade_to) == span:
+            return f"초등 {word}부"
+    return ""
+
+
 def has_band_word(label: str) -> bool:
     return any(word in label for word in BAND_WORDS)
 

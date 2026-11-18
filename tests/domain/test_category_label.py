@@ -68,3 +68,13 @@ def test_전국대회_인제_종별_글도_읽는다():
     assert read("20대 청년부") == (None, 13, 13, 20, 29)
     assert read("50대이상 노년부") == (None, 13, 13, 50, None)
     assert read("노년부 50세 이상") == (None, 13, 13, 50, None)
+
+
+def test_요강이_저학년부_고학년부라고_부르면_그_이름을_대진_제목에_쓴다():
+    from kendo_tournament.domain.division.category_label import group_name
+
+    assert group_name("초등학교 저학년부") == "초등 저학년부"
+    assert group_name("여자 초등 고학년부") == "초등 고학년부"
+    assert group_name("초등저학년1~3학년") == "초등 저학년부"
+    assert group_name("저학년 1~2학년") == "", "범위가 저학년(1~3)과 다르면 이름을 붙이지 않는다"
+    assert group_name("남초등 1~2학년") == ""

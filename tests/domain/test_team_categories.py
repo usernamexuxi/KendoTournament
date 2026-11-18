@@ -36,8 +36,8 @@ def test_팀은_자기_종별_부문에만_들어간다():
     result = build_divisions(people, teams, team_rules(teams))
     placed = {d.label: sorted(e.id for e in d.entries) for d in result.divisions}
     assert placed == {
-        "혼성 초1~초3 단체전": ["t00", "t01"],
-        "혼성 초4~초6 단체전": ["t10", "t11"],
+        "혼성 초등 저학년부 단체전": ["t00", "t01"],
+        "혼성 초등 고학년부 단체전": ["t10", "t11"],
         "여자 중1~고3 단체전": ["t20", "t21"],
         "남자 중1~고3 단체전": ["t30", "t31"],
         "남자 성인 단체전": ["t40", "t41"],

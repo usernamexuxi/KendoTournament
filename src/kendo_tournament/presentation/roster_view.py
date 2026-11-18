@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
     QInputDialog,
     QListWidget,
     QListWidgetItem,
+    QMessageBox,
     QTableWidget,
     QTableWidgetItem,
     QVBoxLayout,
@@ -194,7 +195,13 @@ class RosterView(QWidget):
     def _remove_selected(self) -> None:
         rows = {index.row() for index in self._table.selectedIndexes()}
         ids = {self._table.item(row, 0).data(Qt.ItemDataRole.UserRole) for row in rows}
-        if ids:
+        if not ids:
+            show_warnings(self._warnings, ["지울 선수를 표에서 먼저 눌러 주세요."])
+            return
+        # 지운 선수는 되살릴 수단이 없어 한 번 묻는다(운영자 요청).
+        question = f"고른 선수 {len(ids)}명을 명단에서 지울까요? 지우면 되살릴 수 없습니다."
+        answer = QMessageBox.question(self, "선수 지우기", question)
+        if answer == QMessageBox.StandardButton.Yes:
             self._session.set_participants([p for p in self._session.tournament.participants if p.id not in ids])
             self.refresh()
             self.roster_changed.emit()

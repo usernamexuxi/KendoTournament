@@ -110,9 +110,22 @@ INJE_NATIONAL = CategoryTable(
     ),
 )
 
+# 운영자: 요강의 초등부 이름이 학년 대신 저학년부(1~3)·고학년부(4~6)로 나올 수 있다. 초등부만 바꾸고 나머지는 광명 회장기와 같다.
+ELEMENTARY_HALVES_TABLE = CategoryTable(
+    individual=(
+        "남초등 저학년부",
+        "남초등 고학년부",
+        "여초등 저학년부",
+        "여초등 고학년부",
+        *GWANGMYEONG_CHAIRMAN.individual[5:],
+    ),
+    team=("초등 저학년부", "초등 고학년부", *GWANGMYEONG_CHAIRMAN.team[2:]),
+)
+
 TEMPLATES: dict[str, CategoryTable] = {
     "광명 회장기": GWANGMYEONG_CHAIRMAN,
     "광명 시장기": GWANGMYEONG_MAYOR,
     "인제 전국대회": INJE_NATIONAL,
+    "초등 저학년·고학년부": ELEMENTARY_HALVES_TABLE,
 }
 DEFAULT_CATEGORY_TABLE = GWANGMYEONG_CHAIRMAN

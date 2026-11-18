@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from enum import Enum
 
 
@@ -99,6 +99,8 @@ class DivisionRule:
     age_from: int | None = None
     age_to: int | None = None
     age_name: str = ""
+    # 요강이 부르는 종별 이름(「초등 저학년부」). 학년 범위가 바뀌면(합치기·쪼개기) 그 이름이 맞지 않아 비운다.
+    name: str = ""
 
     def __post_init__(self) -> None:
         if self.grade_from > self.grade_to:
@@ -115,7 +117,14 @@ class DivisionRule:
             grades = self.age_band_label
         elif self.age_name:
             grades = self.age_name
+        elif self.name:
+            grades = self.name
         return f"{gender} {grades} {self.event.value}"
+
+    def with_grades(self, grade_from: Grade, grade_to: Grade) -> DivisionRule:
+        """학년 범위를 바꾼 규칙. 범위가 달라지면 요강 이름이 더는 맞지 않아 뗀다."""
+        same = (grade_from, grade_to) == (self.grade_from, self.grade_to)
+        return replace(self, grade_from=grade_from, grade_to=grade_to, name=self.name if same else "")
 
     @property
     def has_age_band(self) -> bool:
