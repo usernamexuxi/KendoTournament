@@ -32,6 +32,10 @@ HINT = (
     "단체전은 팀마다 자리별로 이름을 적습니다. 같은 도장을 다시 적으면 그 도장의 직접 작성 명단이 새 내용으로 바뀝니다."
 )
 NAMES_PLACEHOLDER = "예: 홍길동, 김철수 이영희"
+# 요강이 학년마다 따로여도 신청이 「초1~2」처럼 묶여 오면 넣을 줄이 없었다(운영자 지적). 종별 글을 직접 적는 줄을 둔다.
+FREE_ROWS = 2
+FREE_CATEGORY_PLACEHOLDER = "예: 남초 1~2"
+FREE_TITLE = "다른 종별 직접 적기 — 위에 맞는 줄이 없을 때(성별·학년을 함께 적기)"
 
 
 class WrittenFormDialog(ScreenFitDialog):
@@ -50,6 +54,7 @@ class WrittenFormDialog(ScreenFitDialog):
         self._dojang.setCurrentText("")
         self._dojang.lineEdit().setPlaceholderText("단체명(도장) — 목록에서 고르거나 새로 입력")
         self._individual = {label: QLineEdit() for label in entry_lines(categories.individual)}
+        self._free = [(QLineEdit(), QLineEdit()) for _ in range(FREE_ROWS)]
         self._teams = WrittenTeamRows(categories.team)
         page = QWidget()
         page.setObjectName("page")
@@ -82,6 +87,14 @@ class WrittenFormDialog(ScreenFitDialog):
         for label, names in self._individual.items():
             names.setPlaceholderText(NAMES_PLACEHOLDER)
             form.addRow(label, names)
+        free_title = QLabel(FREE_TITLE)
+        free_title.setObjectName("hint")
+        free_title.setWordWrap(True)
+        form.addRow(free_title)
+        for category, names in self._free:
+            category.setPlaceholderText(FREE_CATEGORY_PLACEHOLDER)
+            names.setPlaceholderText(NAMES_PLACEHOLDER)
+            form.addRow(category, names)
         return box
 
     def _team_box(self) -> QGroupBox:
@@ -91,7 +104,9 @@ class WrittenFormDialog(ScreenFitDialog):
         return box
 
     def written_form(self) -> WrittenForm:
-        individuals = tuple(IndividualLine(label, split_names(names.text())) for label, names in self._individual.items())
+        rows = [(label, names.text()) for label, names in self._individual.items()]
+        rows += [(category.text().strip(), names.text()) for category, names in self._free if names.text().strip()]
+        individuals = tuple(IndividualLine(label, split_names(text)) for label, text in rows)
         return WrittenForm(self._dojang.currentText().strip(), individuals, self._teams.values())
 
     def accept(self) -> None:

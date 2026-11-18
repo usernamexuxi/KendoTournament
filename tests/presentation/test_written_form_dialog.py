@@ -34,7 +34,20 @@ def test_종별_줄에_적은_이름과_팀_자리가_명단에_들어간다(tmp
     assert sorted(p.name for p in individuals) == ["김하나", "이두리"]
     (team,) = s.tournament.teams
     assert team.positions == ("선봉", "주장")
-    assert first_label == "남초등 1학년", "광명 기본 종별 「남초등 1~2학년」이 학년마다 한 줄로 나뉜다"
+    assert list(dialog._individual)[:3] == ["남초등 1~2학년", "남초등 1학년", "남초등 2학년"], "묶음 줄 밑에 학년 줄"
+
+
+def test_다른_종별_직접_적기_줄은_적은_종별_글_그대로_명단에_넣는다(tmp_path):
+    s = session(tmp_path)
+    parent = QWidget()
+    dialog = WrittenFormDialog(s, parent)
+    dialog._dojang.setCurrentText("누리검도관")
+    category, names = dialog._free[0]
+    category.setText("남초등 1~2학년")
+    names.setText("김묶음")
+    dialog.accept()
+    (person,) = s.tournament.participants
+    assert person.category == "남초등 1~2학년"
 
 
 def test_도장을_안_적으면_창을_닫지_않고_명단도_그대로다(tmp_path, monkeypatch):

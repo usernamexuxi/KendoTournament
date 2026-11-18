@@ -33,9 +33,10 @@ def participant_from_category(where: str, name: str, dojang: str, category: Cate
 
 
 def entry_lines(labels: tuple[str, ...]) -> tuple[str, ...]:
-    """직접 작성 창의 개인전 줄. 「남초등 1~2학년」처럼 초등 학년을 묶은 종별은 학년마다 한 줄로 나눈다.
+    """직접 작성 창의 개인전 줄. 「남초등 1~2학년」처럼 초등 학년을 묶은 종별은 묶음 줄 하나와 학년마다 한 줄을 둔다.
 
     운영자: 1학년·2학년을 따로 적어야 할 수 있다. 따로 적은 선수는 학년이 정해져 학년별 부문으로도 나눌 수 있다.
+    운영자: 신청이 「초등 1~2」처럼 묶여 올 수도 있다 — 학년을 모르는 선수는 묶음 줄에 적는다(학년을 지어내지 않는다).
     그 밖의 종별(중·고·성인, 알아볼 수 없는 글)은 그대로 한 줄이다.
     """
     lines: list[str] = []
@@ -45,6 +46,7 @@ def entry_lines(labels: tuple[str, ...]) -> tuple[str, ...]:
             lines.append(label)
             continue
         prefix = GENDER_PREFIX.get(category.gender, "")
+        lines.append(label)
         lines += [f"{prefix}초등 {grade}학년" for grade in range(category.grade_from, category.grade_to + 1)]
     return tuple(lines)
 
