@@ -7,9 +7,9 @@ from PySide6.QtWidgets import QDialog, QGroupBox, QHBoxLayout, QLabel, QVBoxLayo
 
 from kendo_tournament.domain.layout.bracket_layout import PageLayout
 from kendo_tournament.presentation.bracket_canvas import BracketCanvas
-from kendo_tournament.presentation.widgets import button
+from kendo_tournament.presentation.widgets import button, empty_state
 
-EMPTY_PREVIEW = "왼쪽에서 종별에 체크하면 인쇄될 모양이 여기 나옵니다."
+EMPTY_PREVIEW = "인쇄할 대진이 아직 없습니다.\n왼쪽에서 종별에 체크하면 인쇄될 모양이 여기 나옵니다."
 
 
 class PrintPreview(QGroupBox):
@@ -22,9 +22,7 @@ class PrintPreview(QGroupBox):
         self._canvas.verticalScrollBar().valueChanged.connect(self._show_position)
         self._position = QLabel()
         self._position.setObjectName("hint")
-        self._empty = QLabel(EMPTY_PREVIEW)
-        self._empty.setObjectName("hint")
-        self._empty.setWordWrap(True)
+        self._empty = empty_state(EMPTY_PREVIEW)
         previous, following = button("◀ 앞 쪽"), button("다음 쪽 ▶")
         whole, width = button("한 쪽 보기"), button("폭 맞춤")
         previous.clicked.connect(lambda: self._move(-1))
@@ -44,16 +42,24 @@ class PrintPreview(QGroupBox):
             big.clicked.connect(self._open_large)
             viewing.addWidget(big)
         viewing.addStretch(1)
+        # 쪽이 없으면 넘기기·보기 단추가 쓸모없고, 캔버스가 숨으면 남은 단추들이 위아래로 흩어졌다(운영자 화면).
+        # 단추 묶음을 함께 숨기고 빈 안내가 그 자리를 채운다.
+        self._controls = QWidget()
+        controls = QVBoxLayout(self._controls)
+        controls.setContentsMargins(0, 0, 0, 0)
+        controls.addLayout(paging)
+        controls.addLayout(viewing)
         layout = QVBoxLayout(self)
-        layout.addLayout(paging)
-        layout.addLayout(viewing)
-        layout.addWidget(self._empty)
+        layout.setSpacing(12)
+        layout.addWidget(self._controls)
+        layout.addWidget(self._empty, 1)
         layout.addWidget(self._canvas, 1)
 
     def show_pages(self, pages: list[PageLayout]) -> None:
         self._pages = list(pages)
         self._canvas.show_pages(pages, set(), set())
         self._empty.setVisible(not pages)
+        self._controls.setVisible(bool(pages))
         self._canvas.setVisible(bool(pages))
         # 화면 배치가 끝나야 창 크기를 알 수 있어 맞추기는 한 박자 뒤에 한다.
         QTimer.singleShot(0, lambda: self._canvas.fit_page(0))

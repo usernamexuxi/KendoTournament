@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QMessageBox, QPushButton, QVBoxLayout, QWidget
 
 from kendo_tournament.presentation.style import SPACING
@@ -37,6 +38,15 @@ def button_row(*buttons: QPushButton) -> QHBoxLayout:
         row.addWidget(item)
     row.addStretch(1)
     return row
+
+
+def empty_state(text: str) -> QLabel:
+    """내용이 없을 때 그 자리를 채우는 큰 안내. 빈 표·빈 칸만 덩그러니 남으면 운영자가 무엇을 할지 모른다."""
+    label = QLabel(text)
+    label.setObjectName("emptyState")
+    label.setWordWrap(True)
+    label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+    return label
 
 
 def warning_label() -> QLabel:

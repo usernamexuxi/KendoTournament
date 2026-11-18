@@ -25,7 +25,15 @@ from kendo_tournament.domain.text_values import parse_age, parse_gender
 from kendo_tournament.presentation.file_dialogs import open_files
 from kendo_tournament.presentation.participant_dialog import ParticipantDialog
 from kendo_tournament.presentation.style import WARN_SOFT
-from kendo_tournament.presentation.widgets import TABLE_ROW_HEIGHT, button, button_row, page_layout, show_warnings, warning_label
+from kendo_tournament.presentation.widgets import (
+    TABLE_ROW_HEIGHT,
+    button,
+    button_row,
+    empty_state,
+    page_layout,
+    show_warnings,
+    warning_label,
+)
 from kendo_tournament.presentation.written_form_dialog import WrittenFormDialog
 
 # 나이는 세는나이다. 세는나이는 학년과 하나씩 맞물리지만(8세=초1) 만 나이는 생일에 따라 한 학년에 두 나이가 섞인다.
@@ -35,6 +43,7 @@ TEAM_LABEL = "단체전"
 # 불러오기 알림·성별 요청·서류 확인(중복 의심)을 한 칸에 모아 보여 준다. 성별 요청이 많아도 다른 알림이 밀려나지 않게 넉넉히.
 WARNING_LIMIT = 16
 EDITABLE = {0: "dojang", 1: "name", 2: "gender", 3: "grade", 4: "age"}
+EMPTY_ROSTER = "아직 선수가 없습니다.\n위 「신청 문서 불러오기」를 누르거나, 신청서 파일을 이 창에 끌어다 놓으세요."
 
 
 def needs_check(person: Participant, team_member: bool = False) -> bool:
@@ -72,7 +81,11 @@ class RosterView(QWidget):
         self._warnings = warning_label()
         layout.addWidget(self._warnings)
 
-        body = QHBoxLayout()
+        self._empty = empty_state(EMPTY_ROSTER)
+        layout.addWidget(self._empty, 1)
+        self._body = QWidget()
+        body = QHBoxLayout(self._body)
+        body.setContentsMargins(0, 0, 0, 0)
         self._table = QTableWidget(0, len(COLUMNS))
         self._table.setHorizontalHeaderLabels(COLUMNS)
         self._table.horizontalHeader().setStretchLastSection(True)
@@ -86,11 +99,13 @@ class RosterView(QWidget):
         side.addWidget(self._dojangs, 1)
         side.addWidget(merge)
         body.addLayout(side, 1)
-        layout.addLayout(body, 1)
+        layout.addWidget(self._body, 1)
         self.refresh()
 
     def refresh(self) -> None:
         people = self._session.tournament.participants
+        self._empty.setVisible(not people)
+        self._body.setVisible(bool(people))
         team_of = {member: team.name for team in self._session.tournament.teams for member in team.member_ids}
         self._table.blockSignals(True)
         self._table.setRowCount(len(people))

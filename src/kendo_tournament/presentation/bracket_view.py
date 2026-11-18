@@ -8,12 +8,23 @@ from PySide6.QtWidgets import QHBoxLayout, QInputDialog, QLabel, QListWidget, QL
 from kendo_tournament.application.export_brackets import pages_for
 from kendo_tournament.application.tournament_session import TournamentSession
 from kendo_tournament.domain.draw.bracket import Bracket
+from kendo_tournament.domain.model import Event
 from kendo_tournament.presentation.bracket_canvas import BracketCanvas
-from kendo_tournament.presentation.widgets import button, button_row, page_layout, report_error, show_warnings, warning_label
+from kendo_tournament.presentation.widgets import (
+    button,
+    button_row,
+    empty_state,
+    page_layout,
+    report_error,
+    show_warnings,
+    warning_label,
+)
 
 DRAW_ALL = "대진 자동으로 짜기"
 HINT = f"「{DRAW_ALL}」를 누르세요. 자리를 바꾸려면 대진표에서 이름 두 개를 차례로 누르세요."
 PICK_HINT = "「{name}」 선수를 골랐습니다. 자리를 바꿀 다른 선수 이름을 누르세요. 빼려면 「선수 빼기(기권)」. 다시 누르면 취소."
+NO_DIVISIONS = "아직 나눈 종별이 없습니다.\n「③ 종별 나누기」에서 선수를 종별로 나눠 주세요."
+NOT_DRAWN = f"이 종별은 아직 대진을 짜지 않았습니다.\n위 「{DRAW_ALL}」를 누르세요."
 LIST_MIN_WIDTH = 340
 ZOOM_STEP = 1.25
 
@@ -58,10 +69,28 @@ class BracketView(QWidget):
         self._pick_hint.setObjectName("pickHint")
         self._pick_hint.setWordWrap(True)
         self._pick_hint.hide()
+        self._board_title = QLabel()
+        self._board_title.setObjectName("boardTitle")
+        self._board_info = QLabel()
+        self._board_info.setObjectName("boardInfo")
+        heading = QVBoxLayout()
+        heading.setSpacing(2)
+        heading.addWidget(self._board_title)
+        heading.addWidget(self._board_info)
+        top = QHBoxLayout()
+        top.addLayout(heading, 1)
+        top.addLayout(button_row(bigger, smaller, whole))
+        # 대진이 없으면 확대 단추·빈 캔버스 대신 큰 안내 하나만 둔다(빈 회색 칸과 스크롤 막대만 남던 화면).
+        self._board = QWidget()
+        board = QVBoxLayout(self._board)
+        board.setContentsMargins(0, 0, 0, 0)
+        board.addLayout(top)
+        board.addWidget(self._pick_hint)
+        board.addWidget(self._canvas, 1)
+        self._empty = empty_state(NO_DIVISIONS)
         view = QVBoxLayout()
-        view.addLayout(button_row(bigger, smaller, whole))
-        view.addWidget(self._pick_hint)
-        view.addWidget(self._canvas, 1)
+        view.addWidget(self._board, 1)
+        view.addWidget(self._empty, 1)
         body.addLayout(view, 5)
         layout.addLayout(body, 1)
 
@@ -78,6 +107,7 @@ class BracketView(QWidget):
                 self._divisions.setCurrentItem(item)
         if self._divisions.currentItem() is None and self._divisions.count():
             self._divisions.setCurrentRow(0)
+        self._divisions.setVisible(self._divisions.count() > 0)
         self._divisions.blockSignals(False)
         self._show_current()
 
@@ -88,10 +118,17 @@ class BracketView(QWidget):
     def _show_current(self, fit: bool = True) -> None:
         label = self._label()
         bracket = self._session.bracket(label) if label else None
+        self._board.setVisible(bracket is not None)
+        self._empty.setVisible(bracket is None)
         if bracket is None:
             self._canvas.show_pages([], set(), set())
-            show_warnings(self._warnings, [f"아직 대진을 짜지 않은 종별입니다. 「{DRAW_ALL}」를 눌러 주세요."] if label else [])
+            self._empty.setText(NOT_DRAWN if label else NO_DIVISIONS)
+            show_warnings(self._warnings, [])
             return
+        division = self._session.division(label)
+        self._board_title.setText(division.label)
+        unit = "팀" if division.event is Event.TEAM else "명"
+        self._board_info.setText(f"{division.event.value} · {len(division.entries)}{unit}")
         conflicts = self._session.conflicts(label)
         added, removed = self._session.pending(label)
         lines = [

@@ -19,7 +19,8 @@ WARN_SOFT = "#fff1dc"
 SELECTED = "#ffe08a"
 PICKED_ROW = "#cfe2fb"
 SCROLL_HANDLE = "#8fa7c8"
-SPACING = 14
+# 운영자 요청(「널널한 디자인」): 칸 사이를 넉넉히 둔다. 1280×752(배율 150%) 노트북에서 ③·⑥ 이 넘치지 않는 데까지.
+SPACING = 18
 # 기본 스크롤 막대는 운영자가 잡기 어렵다고 해서(개발자 지시) 손가락 굵기에 가깝게 넓혔다.
 SCROLLBAR_PX = 22
 # 화면 글꼴은 운영자가 보기 편하다고 한 맑은 고딕, 인쇄 미리보기는 만드는 PDF 와 같은 Pretendard(배포본에 넣은 글꼴, main.py 가 등록).
@@ -45,6 +46,10 @@ QListWidget#steps::item:hover {{ background: {ACCENT_DARK}; }}
 QListWidget#steps::item:selected {{ background: {SURFACE}; color: {ACCENT}; font-weight: bold; border-left: 5px solid {ACCENT_DARK}; }}
 QLabel#pageTitle {{ font-size: {TITLE_PT}pt; font-weight: bold; color: {ACCENT_DARK}; }}
 QLabel#hint {{ color: {MUTED}; line-height: 150%; }}
+QLabel#emptyState {{ color: {MUTED}; background: {CANVAS}; border: 2px dashed {LINE}; border-radius: 12px;
+    padding: 40px 24px; font-size: {BASE_PT + 3}pt; font-weight: bold; }}
+QLabel#boardInfo {{ color: {MUTED}; font-size: {BASE_PT + 1}pt; padding: 2px 0; }}
+QLabel#boardTitle {{ color: {INK}; font-size: {BASE_PT + 4}pt; font-weight: bold; }}
 QLabel#pickHint {{ color: {INK}; background: {SELECTED}; border-radius: 6px; padding: 10px 14px; font-weight: bold; }}
 QLabel#warning {{ color: {WARN}; background: {WARN_SOFT}; border: 1px solid #f1c48a; border-radius: 6px; padding: 10px 14px; }}
 QGroupBox {{ background: {SURFACE}; border: 1px solid {LINE}; border-radius: 8px; margin-top: 18px; padding: 16px; }}

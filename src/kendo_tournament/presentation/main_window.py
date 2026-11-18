@@ -19,7 +19,7 @@ from kendo_tournament.presentation.help_dialog import HelpDialog
 from kendo_tournament.presentation.output_view import OutputView
 from kendo_tournament.presentation.review_view import ReviewView
 from kendo_tournament.presentation.roster_view import RosterView
-from kendo_tournament.presentation.step_nav import StepNav, show_step_notes
+from kendo_tournament.presentation.step_notes import show_step_notes
 from kendo_tournament.presentation.tournament_view import TournamentView
 from kendo_tournament.presentation.widgets import button
 
@@ -86,9 +86,6 @@ class MainWindow(QMainWindow):
         right.setContentsMargins(0, 8, 12, 0)
         right.addLayout(header)
         right.addWidget(self._stack, 1)
-        self._nav = StepNav(STEPS)
-        self._nav.go.connect(self._steps.setCurrentRow)
-        right.addWidget(self._nav)
         body = QHBoxLayout()
         body.setContentsMargins(0, 0, 0, 0)
         body.addWidget(sidebar)
@@ -119,7 +116,6 @@ class MainWindow(QMainWindow):
 
     def _go_to(self, row: int) -> None:
         self._stack.setCurrentIndex(row)
-        self._nav.show_step(row)
         page = self._stack.currentWidget()
         refresh = getattr(page, "refresh", None)
         if refresh:
