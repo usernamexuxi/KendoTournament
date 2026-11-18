@@ -61,7 +61,7 @@ class BracketView(QWidget):
         body.addWidget(self._divisions, 2)
         self._canvas = BracketCanvas()
         self._canvas.slot_clicked.connect(self._slot_clicked)
-        bigger, smaller, whole = button("＋ 크게"), button("－ 작게"), button("전체 보기")
+        bigger, smaller, whole = button("＋ 크게"), button("－ 작게"), button("기본 보기")
         bigger.clicked.connect(lambda: self._canvas.zoom(ZOOM_STEP))
         smaller.clicked.connect(lambda: self._canvas.zoom(1 / ZOOM_STEP))
         whole.clicked.connect(self._canvas.fit_drawing)
