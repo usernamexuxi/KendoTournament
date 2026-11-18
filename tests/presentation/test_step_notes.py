@@ -14,7 +14,7 @@ STEPS = ("① 가", "② 나", "③ 다")
 def test_진행_표시는_단계_이름_밑_줄에_붙는다():
     steps = QListWidget()
     steps.addItems(STEPS)
-    show_step_notes(steps, STEPS, (StepNote("대회", True), StepNote("", False), StepNote("할 차례", False)))
+    show_step_notes(steps, STEPS, (StepNote("대회", True), StepNote("", False), StepNote("3/16개 짬", False)))
     assert steps.item(0).text() == "① 가\n      ✓ 대회"
     assert steps.item(1).text() == "② 나"
-    assert steps.item(2).text().endswith("할 차례")
+    assert steps.item(2).text().endswith("3/16개 짬")

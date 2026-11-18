@@ -11,7 +11,6 @@ from datetime import datetime
 from kendo_tournament.domain.tournament import Tournament
 
 DONE = "✓"
-TODO = "할 차례"
 
 
 @dataclass(frozen=True)
@@ -25,25 +24,23 @@ class StepNote:
         return f"{DONE} {self.text}" if self.done else self.text
 
 
+# 아직 안 한 단계는 단계 이름만 둔다. 「할 차례」를 붙였더니 운영자가 「그냥 선수 명단이라고 해」라고 했다.
+NOT_YET = StepNote("", False)
+
+
 def step_notes(tournament: Tournament) -> tuple[StepNote, ...]:
-    """① 대회 정보 ~ ⑥ 책자 만들기 순서대로. 확인할 거리가 없는 단계는 빈 글이다."""
-    people = len(tournament.participants) + len(tournament.teams)
+    """① 대회 정보 ~ ⑥ 책자 만들기 순서대로. 아직 안 했거나 확인할 거리가 없는 단계는 빈 글이다."""
     divisions = tournament.divisions
     drawn = sum(1 for division in divisions if division.label in tournament.brackets)
-    roster = StepNote(f"{len(tournament.participants)}명", True) if people else StepNote(TODO, False)
-    if not people:
-        grouped = StepNote("", False)
-    elif divisions:
-        grouped = StepNote(f"종별 {len(divisions)}개", True)
-    else:
-        grouped = StepNote(TODO, False)
-    if not divisions:
-        bracket = StepNote("", False)
-    elif drawn == len(divisions):
+    roster = StepNote(f"{len(tournament.participants)}명", True) if tournament.participants else NOT_YET
+    grouped = StepNote(f"종별 {len(divisions)}개", True) if divisions else NOT_YET
+    if drawn and drawn == len(divisions):
         bracket = StepNote(f"{drawn}개 다 짬", True)
+    elif drawn:
+        bracket = StepNote(f"{drawn}/{len(divisions)}개 짬", False)
     else:
-        bracket = StepNote(f"{drawn}/{len(divisions)}개 짬" if drawn else TODO, False)
-    return (StepNote(tournament.name, True), roster, grouped, bracket, StepNote("", False), StepNote("", False))
+        bracket = NOT_YET
+    return (StepNote(tournament.name, True), roster, grouped, bracket, NOT_YET, NOT_YET)
 
 
 def saved_text(saved_at: datetime | None, file_name: str, opened: bool) -> str:

@@ -1,29 +1,28 @@
 from datetime import datetime, timedelta, timezone
 
 from kendo_tournament.application.draw_brackets import draw_all, rebuild_divisions
-from kendo_tournament.application.step_progress import DONE, TODO, saved_text, step_notes
+from kendo_tournament.application.step_progress import DONE, saved_text, step_notes
 from tests.application.test_print_booklet import tournament
 
 KST = timezone(timedelta(hours=9))
 ROSTER, DIVISIONS, BRACKETS = 1, 2, 3
 
 
-def test_빈_대회는_명단이_할_차례이고_뒤_단계는_조용하다():
+def test_아직_안_한_단계는_단계_이름만_두고_덧붙이는_글이_없다():
     from kendo_tournament.domain.tournament import Tournament
 
     notes = step_notes(Tournament("새 대회"))
-    assert str(notes[ROSTER]) == TODO
+    assert [str(notes[i]) for i in (ROSTER, DIVISIONS, BRACKETS)] == ["", "", ""]
     assert not notes[ROSTER].done
-    assert str(notes[DIVISIONS]) == "" and str(notes[BRACKETS]) == ""
 
 
-def test_명단만_있으면_종별_나누기가_할_차례다():
+def test_명단만_있으면_명단에만_체크가_붙는다():
     t = tournament()
     t.divisions = []
     t.brackets = {}
     notes = step_notes(t)
     assert notes[ROSTER].done and str(notes[ROSTER]).startswith(DONE)
-    assert str(notes[DIVISIONS]) == TODO
+    assert str(notes[DIVISIONS]) == ""
 
 
 def test_대진을_다_짜면_대진_단계에_체크가_붙고_일부만_짜면_몇_개인지_보인다():
