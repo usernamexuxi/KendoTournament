@@ -168,3 +168,12 @@ def test_직접_적은_신청서는_명단에_들어가고_같은_도장을_다�
     s.add_written_form(WrittenForm("누리검도관", (IndividualLine("남초등 1~2학년", ("이두리",)),), ()))
     assert sorted(p.name for p in s.tournament.participants) == ["김하나", "이두리"]
     assert s.tournament.teams == []
+
+
+def test_자동_저장하면_저장_시각을_시간대와_함께_남기고_파일을_열면_비운다(tmp_path):
+    s = session(tmp_path)
+    assert s.saved_at is None
+    s.update_settings(name="시각 시험")
+    assert s.saved_at is not None and s.saved_at.tzinfo is not None
+    s.open(s.path)
+    assert s.saved_at is None

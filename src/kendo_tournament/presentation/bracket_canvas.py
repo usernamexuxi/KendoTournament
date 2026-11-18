@@ -53,6 +53,10 @@ class BracketCanvas(QGraphicsView):
     def fit(self) -> None:
         self.fitInView(self.scene().sceneRect(), Qt.AspectRatioMode.KeepAspectRatio)
 
+    def zoom(self, factor: float) -> None:
+        """단추로 확대·축소한다. Ctrl+휠은 운영자가 모르는 경우가 많다."""
+        self.scale(factor, factor)
+
     @property
     def page_count(self) -> int:
         return len(self._page_tops)

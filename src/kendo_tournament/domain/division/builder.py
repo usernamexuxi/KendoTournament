@@ -181,8 +181,8 @@ def _merge_pair(groups: list[_Group], group: _Group) -> tuple[_Group, _Group] | 
 
 def _shortage_warning(group: _Group) -> str:
     if len(group.entries) == SOLO:
-        return f"{group.label}: 혼자라 경기가 안 되지만 합칠 부문이 없습니다(같은 종목·성별에 바로 이어지는 학년 부문 없음)."
-    return f"{group.label}: {len(group.entries)}명(팀)으로 기준 미달이지만 합칠 부문이 없습니다."
+        return f"{group.label}: 혼자라 경기가 안 되지만 합칠 종별이 없습니다(같은 종목·성별에 바로 이어지는 학년 종별 없음)."
+    return f"{group.label}: {len(group.entries)}명(팀)으로 기준 미달이지만 합칠 종별이 없습니다."
 
 
 def _merge_small_groups(groups: list[_Group]) -> tuple[list[_Group], list[str]]:
@@ -194,7 +194,7 @@ def _merge_small_groups(groups: list[_Group]) -> tuple[list[_Group], list[str]]:
             return groups, warnings
         if group.head.event is Event.TEAM and len(group.entries) == SOLO:
             # 운영자: 단체전은 미리 말을 맞추고 나와 보통 상대가 있다. 혼자면 다른 종별 팀과 붙이지 말고 경기 없음을 알린다.
-            warnings.append(f"{group.label}: 1팀뿐이라 경기가 없습니다. 다른 부문과 합치지 않았습니다.")
+            warnings.append(f"{group.label}: 1팀뿐이라 경기가 없습니다. 다른 종별과 합치지 않았습니다.")
             stuck.add(id(group))
             continue
         # 사람이 있는 같은 종목·성별 부문이 따로 없으면 빈 부문만 끌어모아 범위만 넓어진다(초1~성인 1명). 합치지 않는다.

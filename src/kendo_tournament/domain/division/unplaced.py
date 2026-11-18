@@ -39,18 +39,18 @@ def unplaced_lines(result: DivisionResult) -> list[str]:
         else:
             grouped.setdefault(_kind(person), []).append(f"{person.name}({person.dojang})")
     lines = [
-        f"종별 「{label}」 {len(names)}명: {_names(names)} — 이 종별 전체를 담는 개인전 부문이 없습니다(신청서에 학년이 없어 학년별로 못 나눕니다)."
+        f"종별 「{label}」 {len(names)}명: {_names(names)} — 이 종별 전체를 담는 개인전 종별이 없습니다(신청서에 학년이 없어 학년별로 못 나눕니다)."
         for label, names in by_category.items()
     ]
     for kind, names in grouped.items():
         if kind is None:
-            lines.append(f"성별이나 학년을 몰라 부문을 정할 수 없는 선수 {len(names)}명: {_names(names)} — 명단에서 채워 주세요.")
+            lines.append(f"성별이나 학년을 몰라 종별을 정할 수 없는 선수 {len(names)}명: {_names(names)} — 명단에서 채워 주세요.")
             continue
         gender, grade = kind
-        lines.append(f"{gender.value}자 {grade.label} {len(names)}명: {_names(names)} — 이 학년 개인전 부문이 없습니다.")
+        lines.append(f"{gender.value}자 {grade.label} {len(names)}명: {_names(names)} — 이 학년 개인전 종별이 없습니다.")
     if result.unplaced_teams:
         teams = [team.name for team in result.unplaced_teams]
-        lines.append(f"단체전 팀 {len(teams)}개: {_names(teams, '개')} — 들어갈 단체전 부문이 없습니다.")
+        lines.append(f"단체전 팀 {len(teams)}개: {_names(teams, '개')} — 들어갈 단체전 종별이 없습니다.")
     return lines
 
 

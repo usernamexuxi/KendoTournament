@@ -53,15 +53,14 @@ class RosterView(QWidget):
         self.setAcceptDrops(True)
         layout = page_layout(
             self,
-            "명단",
-            "신청 문서(한글·워드·PDF)를 불러오거나 이 창에 끌어다 놓으세요. "
-            "주황색 줄은 확인이 필요한 선수입니다. 칸을 두 번 눌러 고칠 수 있습니다. 나이는 세는나이(한국 나이)로 적습니다.",
+            "선수 명단",
+            "「신청 문서 불러오기」로 신청서를 넣으세요. 주황색 줄은 확인이 필요한 선수입니다(칸을 두 번 눌러 고침).",
         )
         load, written, add, remove, merge = (
             button("신청 문서 불러오기", primary=True),
             button("신청서 직접 작성"),
             button("선수 추가"),
-            button("선택 삭제"),
+            button("고른 선수 지우기"),
             button("같은 도장으로 묶기"),
         )
         load.clicked.connect(self._choose_files)

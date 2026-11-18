@@ -106,7 +106,7 @@ class OutputBook:
         first = len(program) + 1
         brackets = self._session.print_pages(self._session.printable_labels(), first)
         if not brackets:
-            raise ValueError("찍을 대진이 없습니다. ⑤ 확인에서 부문을 하나 이상 체크해 주세요.")
+            raise ValueError("찍을 대진이 없습니다. ⑤ 인쇄 순서에서 종별을 하나 이상 체크해 주세요.")
         inserted = [page for path in self.settings.inserts for page in self._inserter.pages(Path(path))]
         number_pages(program)
         front, back = self._front_cover(), self._back_cover()

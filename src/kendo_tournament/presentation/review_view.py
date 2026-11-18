@@ -1,4 +1,4 @@
-"""⑤ 확인 화면: 찍힐 부문·순서·쪽 나눔을 고르고 A4 미리보기로 확인한다."""
+"""⑤ 인쇄 순서 화면: 찍힐 부문·순서·쪽 나눔을 고르고 A4 미리보기로 확인한다."""
 
 from __future__ import annotations
 
@@ -9,8 +9,8 @@ from kendo_tournament.application.tournament_session import TournamentSession
 from kendo_tournament.presentation.print_preview import PrintPreview
 from kendo_tournament.presentation.widgets import button, button_row, page_layout, show_warnings, warning_label
 
-PAGE_BREAK_MARK = "  ⤓ 여기서 새 쪽"
-NOT_DRAWN_MARK = "  (아직 추첨 안 함)"
+PAGE_BREAK_MARK = "  ⤓ 여기부터 새 종이"
+NOT_DRAWN_MARK = "  (아직 대진 안 짬)"
 NOT_PRINTED = "  -  "
 
 
@@ -18,20 +18,14 @@ class ReviewView(QWidget):
     def __init__(self, session: TournamentSession) -> None:
         super().__init__()
         self._session = session
-        layout = page_layout(
-            self,
-            "확인",
-            "찍을 부문을 체크하고 오른쪽 미리보기로 확인하세요. 목록 앞의 「1쪽」「2쪽」이 실리는 쪽입니다. "
-            "작은 대진은 한 쪽에 여러 개가 들어가고, 넘치면 쪽마다 고르게 나눕니다. 한 쪽에 넣을 것을 직접 정하려면 "
-            "부문을 골라 「이 부문부터 새 쪽」을 누르세요(다시 누르면 풀립니다). 「위로」「아래로」로 순서를 바꿉니다.",
-        )
-        check_all, check_none = button("모두 선택"), button("모두 해제")
+        layout = page_layout(self, "인쇄 순서", "인쇄할 종별에 체크가 되어 있는지, 오른쪽 미리보기에서 모양을 확인하세요.")
+        check_all, check_none = button("모두 인쇄"), button("모두 빼기")
         check_all.clicked.connect(lambda: self._check(True))
         check_none.clicked.connect(lambda: self._check(False))
         self._list = QListWidget()
         self._list.setObjectName("printList")
         self._list.itemChanged.connect(self._check_changed)
-        up, down, page_break = button("▲ 위로"), button("▼ 아래로"), button("이 부문부터 새 쪽")
+        up, down, page_break = button("▲ 위로"), button("▼ 아래로"), button("여기부터 새 종이에")
         up.clicked.connect(lambda: self._move(-1))
         down.clicked.connect(lambda: self._move(1))
         page_break.clicked.connect(self._toggle_page_break)
@@ -88,7 +82,7 @@ class ReviewView(QWidget):
     def _move(self, step: int) -> None:
         label = self._current_label()
         if label is None:
-            show_warnings(self._message, ["옮길 부문을 목록에서 먼저 골라 주세요."])
+            show_warnings(self._message, ["옮길 종별을 목록에서 먼저 눌러 주세요."])
             return
         self._session.move_in_print(label, step)
         self.refresh(label)
@@ -96,7 +90,7 @@ class ReviewView(QWidget):
     def _toggle_page_break(self) -> None:
         label = self._current_label()
         if label is None:
-            show_warnings(self._message, ["새 쪽으로 넘길 부문을 목록에서 먼저 골라 주세요."])
+            show_warnings(self._message, ["새 종이로 넘길 종별을 목록에서 먼저 눌러 주세요."])
             return
         self._session.toggle_page_break(label)
         self.refresh(label)

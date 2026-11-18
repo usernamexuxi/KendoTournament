@@ -15,7 +15,7 @@ class CategoryTableBar(QGroupBox):
     edit_requested = Signal()
 
     def __init__(self) -> None:
-        super().__init__("대회 종별 표 — 「규칙 추가」가 이 표대로 부문을 만듭니다")
+        super().__init__("대회 종별 표 — 요강에 나온 종별 목록")
         self._summary = QLabel()
         self._summary.setWordWrap(True)
         edit = button("대회 종별 표 고치기 (요강 읽기)")

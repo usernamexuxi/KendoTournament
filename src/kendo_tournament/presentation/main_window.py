@@ -6,9 +6,11 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
+from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import QHBoxLayout, QLabel, QListWidget, QMainWindow, QStackedWidget, QVBoxLayout, QWidget
 
 from kendo_tournament.application.output_book import OutputBook
+from kendo_tournament.application.step_progress import saved_text, step_notes
 from kendo_tournament.application.tournament_session import TournamentSession
 from kendo_tournament.domain.ports import BracketExporter
 from kendo_tournament.presentation.bracket_view import BracketView
@@ -17,14 +19,17 @@ from kendo_tournament.presentation.help_dialog import HelpDialog
 from kendo_tournament.presentation.output_view import OutputView
 from kendo_tournament.presentation.review_view import ReviewView
 from kendo_tournament.presentation.roster_view import RosterView
+from kendo_tournament.presentation.step_nav import StepNav, show_step_notes
 from kendo_tournament.presentation.tournament_view import TournamentView
 from kendo_tournament.presentation.widgets import button
 
 APP_TITLE = "검도 대진표"
-STEPS = ("① 대회 설정", "② 명단", "③ 부문", "④ 대진", "⑤ 확인", "⑥ 출력")
+STEPS = ("① 대회 정보", "② 선수 명단", "③ 종별 나누기", "④ 대진 짜기", "⑤ 인쇄 순서", "⑥ 책자 만들기")
 REVIEW_STEP = 4
 SIDEBAR_WIDTH = 210
 PREFERRED_WIDTH, PREFERRED_HEIGHT = 1280, 820
+# 진행 표시·저장 알림은 어느 화면에서 무엇을 바꿔도 맞아야 해서, 화면마다 신호를 잇는 대신 짧은 간격으로 다시 읽는다.
+STATUS_INTERVAL_MS = 1000
 
 
 @dataclass(frozen=True)
@@ -81,6 +86,9 @@ class MainWindow(QMainWindow):
         right.setContentsMargins(0, 8, 12, 0)
         right.addLayout(header)
         right.addWidget(self._stack, 1)
+        self._nav = StepNav(STEPS)
+        self._nav.go.connect(self._steps.setCurrentRow)
+        right.addWidget(self._nav)
         body = QHBoxLayout()
         body.setContentsMargins(0, 0, 0, 0)
         body.addWidget(sidebar)
@@ -95,6 +103,10 @@ class MainWindow(QMainWindow):
         self._bracket.go_export.connect(lambda: self._steps.setCurrentRow(REVIEW_STEP))
         self._steps.setCurrentRow(0)
         self._update_title()
+        self._status_timer = QTimer(self)
+        self._status_timer.timeout.connect(self._show_status)
+        self._status_timer.start(STATUS_INTERVAL_MS)
+        self._show_status()
 
     def show_on_screen(self) -> None:
         """보통 크기로 띄우되, 화면(작업 표시줄 뺀 곳)보다 크면 최대화한다.
@@ -107,6 +119,7 @@ class MainWindow(QMainWindow):
 
     def _go_to(self, row: int) -> None:
         self._stack.setCurrentIndex(row)
+        self._nav.show_step(row)
         page = self._stack.currentWidget()
         refresh = getattr(page, "refresh", None)
         if refresh:
@@ -124,8 +137,14 @@ class MainWindow(QMainWindow):
             if refresh:
                 refresh()
         self._update_title()
+        self._show_status()
 
     def _update_title(self) -> None:
         saved = self._session.path.name if self._session.path else "저장 전"
         self.setWindowTitle(f"{APP_TITLE} — {self._session.tournament.name} ({saved})")
-        self.statusBar().showMessage(f"자동 저장: {self._session.path or self._session.default_path()}")
+
+    def _show_status(self) -> None:
+        session = self._session
+        show_step_notes(self._steps, STEPS, step_notes(session.tournament))
+        file_name = (session.path or session.default_path()).name
+        self.statusBar().showMessage(saved_text(session.saved_at, file_name, opened=session.path is not None))

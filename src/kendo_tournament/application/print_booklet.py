@@ -120,7 +120,7 @@ def _booklet_items(tournament: Tournament, labels: Sequence[str]) -> list[tuple[
             continue
         bracket = tournament.brackets.get(label)
         if bracket is None:
-            raise KeyError(f"{label} 부문은 아직 대진을 짜지 않았습니다.")
+            raise KeyError(f"{label} 종별은 아직 대진을 짜지 않았습니다.")
         numbered = number_matches(bracket)
         section = section_title(tournament, divisions[label])
         members = team_member_lines(tournament, bracket) if tournament.book.team_members else {}

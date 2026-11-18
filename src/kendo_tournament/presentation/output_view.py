@@ -1,4 +1,4 @@
-"""⑥ 출력 화면: 표지·대회사·넣을 문서·앞쪽 내용(식순·임원·일정)·뒤표지를 정하고, 미리보기로 확인한 뒤 PDF 로 저장한다."""
+"""⑥ 책자 만들기 화면: 표지·대회사·넣을 문서·앞쪽 내용(식순·임원·일정)·뒤표지를 정하고, 미리보기로 확인한 뒤 PDF 로 저장한다."""
 
 from __future__ import annotations
 
@@ -33,6 +33,7 @@ from kendo_tournament.presentation.widgets import button, button_row, page_layou
 INSERT_FILTER = "넣을 문서 (*.pdf *.docx *.hwpx *.hwp)"
 INSERT_HINT = "PDF 는 원래 모양 그대로 들어갑니다. 한글·워드는 글과 표만 들어가니, 모양 그대로 넣으려면 PDF 로 저장해서 넣으세요."
 PDF_EXTENSION = ".pdf"
+SAVE_LABEL = "책자 PDF로 저장"
 SAVE_HEIGHT = 52
 INSERT_LIST_HEIGHT = 120
 TEAM_MEMBERS_LABEL = "팀 상자 밑에 팀원 이름 넣기"
@@ -50,11 +51,7 @@ class OutputView(QWidget):
         self._exporter = exporter
         self._default_folder = default_folder
         layout = page_layout(
-            self,
-            "출력",
-            "표지를 정하고, 표지 뒤에 넣을 문서가 있으면 추가하세요. 대회사는 「대회사 고치기」, "
-            "대회식순·대회임원·일정안내는 「식순·임원·일정 고치기」에서 내용만 바꿉니다. 순서는 앞표지 → 대회사 → 넣은 문서 → 대회식순·임원 → 일정안내 → "
-            "대진표 → 뒤표지 입니다. 오른쪽 미리보기로 확인하고 저장합니다.",
+            self, "책자 만들기", f"표지와 앞쪽 내용을 확인하고, 다 됐으면 왼쪽 아래 「{SAVE_LABEL}」을 누르세요."
         )
         self._preview = PrintPreview()
         body = QHBoxLayout()
@@ -63,9 +60,9 @@ class OutputView(QWidget):
         body.addWidget(self._preview, 3)
         layout.addLayout(body, 1)
 
-    def _settings_panel(self) -> QScrollArea:
+    def _settings_panel(self) -> QWidget:
         """왼쪽 설정은 창이 낮아도 눌리지 않게 스크롤 안에 둔다 — 줄이면 단추끼리 겹친다."""
-        save = button("PDF로 저장", primary=True)
+        save = button(SAVE_LABEL, primary=True)
         save.setMinimumHeight(SAVE_HEIGHT)
         save.clicked.connect(self._save)
         self._message = warning_label()
@@ -82,8 +79,6 @@ class OutputView(QWidget):
         column.addWidget(self._greeting_box())
         column.addWidget(self._program_box())
         column.addWidget(self._team_box())
-        column.addWidget(self._message)
-        column.addWidget(save)
         column.addStretch(1)
         scroll = QScrollArea()
         scroll.setWidgetResizable(True)
@@ -91,7 +86,14 @@ class OutputView(QWidget):
         scroll.setFrameShape(QScrollArea.Shape.NoFrame)
         scroll.setWidget(panel)
         scroll.setMinimumWidth(panel.minimumSizeHint().width() + scroll.verticalScrollBar().sizeHint().width())
-        return scroll
+        # 저장 단추가 스크롤 맨 밑에 있으면 운영자가 찾지 못한다. 설정을 아무리 길게 늘여도 늘 보이게 스크롤 밖 아래에 둔다.
+        holder = QWidget()
+        stack = QVBoxLayout(holder)
+        stack.setContentsMargins(0, 0, 0, 0)
+        stack.addWidget(scroll, 1)
+        stack.addWidget(self._message)
+        stack.addWidget(save)
+        return holder
 
     def _insert_box(self) -> QGroupBox:
         box = QGroupBox("표지 뒤에 넣을 문서")

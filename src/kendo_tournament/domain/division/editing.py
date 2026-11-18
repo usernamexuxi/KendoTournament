@@ -15,7 +15,7 @@ def _picked(rules: Sequence[DivisionRule], rule_ids: Sequence[str]) -> list[Divi
     wanted = set(rule_ids)
     picked = [rule for rule in rules if rule.id in wanted]
     if len(picked) != len(wanted):
-        raise ValueError("고르신 부문의 규칙을 찾지 못했습니다. 「부문 나누기」를 다시 눌러 주세요.")
+        raise ValueError("고르신 종별의 기준을 찾지 못했습니다. 「선수를 종별로 나누기」를 다시 눌러 주세요.")
     return picked
 
 
@@ -27,13 +27,13 @@ def merge_rules(rules: Sequence[DivisionRule], rule_ids: Sequence[str]) -> list[
     """
     picked = sorted(_picked(rules, rule_ids), key=lambda rule: rule.grade_from.value)
     if len(picked) < 2:
-        raise ValueError("합칠 부문을 둘 이상 골라 주세요.")
+        raise ValueError("합칠 종별을 둘 이상 골라 주세요.")
     head = picked[0]
     if any(rule.event is not head.event or rule.gender is not head.gender for rule in picked):
-        raise ValueError("종목과 성별이 같은 부문끼리만 합칠 수 있습니다.")
+        raise ValueError("종목과 성별이 같은 종별끼리만 합칠 수 있습니다.")
     for lower, upper in zip(picked, picked[1:], strict=False):
         if upper.grade_from.value != lower.grade_to.value + 1:
-            raise ValueError("학년이 이어지는 부문끼리만 합칠 수 있습니다. 사이에 낀 부문도 함께 골라 주세요.")
+            raise ValueError("학년이 이어지는 종별끼리만 합칠 수 있습니다. 사이에 낀 종별도 함께 골라 주세요.")
     merged = replace(head, grade_to=picked[-1].grade_to)
     removed = {rule.id for rule in picked}
     first_position = min(index for index, rule in enumerate(rules) if rule.id in removed)

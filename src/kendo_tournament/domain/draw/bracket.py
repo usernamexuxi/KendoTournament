@@ -45,7 +45,7 @@ class Bracket:
 
 def bracket_size(entry_count: int) -> int:
     if entry_count < 1:
-        raise ValueError("출전자가 없는 부문은 대진을 만들 수 없습니다.")
+        raise ValueError("출전자가 없는 종별은 대진을 만들 수 없습니다.")
     return 1 << (entry_count - 1).bit_length()
 
 

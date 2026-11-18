@@ -46,7 +46,7 @@ def test_다른_성별과는_합치지_않고_경고한다():
     rules = [rule("r1", Gender.MALE, 1, 1, 3), rule("r2", Gender.FEMALE, 2, 2)]
     result = build_divisions(people, [], rules)
     assert len(result.divisions) == 2
-    assert "합칠 부문이 없습니다" in result.warnings[0]
+    assert "합칠 종별이 없습니다" in result.warnings[0]
 
 
 def test_위_학년이_없으면_아래로_합친다():
@@ -125,7 +125,7 @@ def test_혼자인데_사람이_있는_이웃이_없으면_빈_부문과_합치�
     rules = [rule(f"r{g}", Gender.MALE, g, g) for g in range(1, 14)]
     result = build_divisions(people, [], rules)
     assert [d.label for d in result.divisions] == ["남자 초5 개인전"]
-    assert any("합칠 부문이 없습니다" in warning for warning in result.warnings)
+    assert any("합칠 종별이 없습니다" in warning for warning in result.warnings)
 
 
 def test_단체전_팀_인원은_신청서대로라_3명_팀과_4명_팀이_한_부문에_든다():

@@ -1,4 +1,7 @@
-"""③ 부문 화면: 위에서 체크로 규칙을 만들고, 가운데 표에서 고치고, 아래에서 나뉜 결과를 본다."""
+"""③ 종별 나누기 화면: 위에서 기준을 채우고, (필요하면 펼쳐서) 고치고, 아래에서 나뉜 결과를 본다.
+
+화면에는 「부문」 대신 신청서·요강에 늘 나오는 「종별」, 「규칙」 대신 「기준」이라고 쓴다(운영자가 쉬운 말을 원함).
+"""
 
 from __future__ import annotations
 
@@ -35,13 +38,16 @@ from kendo_tournament.presentation.rule_widgets import (
 )
 from kendo_tournament.presentation.widgets import button, button_row, page_layout, report_error
 
-RULE_COLUMNS = ("종목", "성별", "구분 시작", "구분 끝", "성인 나이", "인원 기준", "")
+RULE_COLUMNS = ("종목", "성별", "학년부터", "학년까지", "어른 나이", "적으면 합치기", "")
 EVENT, GENDER, FROM, TO, AGE, MINIMUM, DELETE = range(len(RULE_COLUMNS))
 AGE_PLACEHOLDER = "예: 청년부 20-35"
 RULE_ROW_HEIGHT = 54
 CELL_GAP = 16
 VISIBLE_RULE_ROWS = 6
-NOTHING_TO_SPLIT = "고르신 부문은 더 나눌 수 없습니다(한 학년뿐이거나, 나누면 혼자인 학년이 생깁니다)."
+NOTHING_TO_SPLIT = "고르신 종별은 더 쪼갤 수 없습니다(한 학년뿐이거나, 쪼개면 혼자인 학년이 생깁니다)."
+APPLY_LABEL = "선수를 종별로 나누기"
+SHOW_RULES = "▼ 나누는 기준 자세히 보기·고치기 ({count}줄)"
+HIDE_RULES = "▲ 나누는 기준 접기"
 
 
 class DivisionView(QWidget):
@@ -52,18 +58,22 @@ class DivisionView(QWidget):
         self._session = session
         self._accepted = accepted_extensions
         content = QWidget()
-        layout = page_layout(
-            content,
-            "부문",
-            "① 대회 종별 표 확인(요강을 넣으면 읽어 옴) → ② 「규칙 추가」 → ③ 가운데 표에서 필요하면 고치기 → ④ 「부문 나누기」.",
-        )
+        layout = page_layout(content, "종별 나누기", f"「기준 채우기」를 누른 다음 「{APPLY_LABEL}」를 누르세요.")
         self._categories = CategoryTableBar()
         self._categories.edit_requested.connect(self._edit_categories)
         layout.addWidget(self._categories)
         presets = PresetBox()
         presets.preset_requested.connect(self._add_preset)
         layout.addWidget(presets)
-        layout.addWidget(self._rules_box())
+        self._rules_toggle = button("")
+        self._rules_toggle.clicked.connect(self._toggle_rules)
+        layout.addLayout(button_row(self._rules_toggle))
+        self._rules = self._rules_box()
+        self._rules.hide()
+        layout.addWidget(self._rules)
+        apply = button(APPLY_LABEL, primary=True)
+        apply.clicked.connect(self._apply)
+        layout.addLayout(button_row(apply))
         self._result = DivisionResultBox()
         self._result.merge_requested.connect(lambda labels: self._edit(self._session.merge_divisions, labels))
         self._result.split_requested.connect(self._split)
@@ -82,7 +92,7 @@ class DivisionView(QWidget):
         self.refresh()
 
     def _rules_box(self) -> QGroupBox:
-        box = QGroupBox("부문 규칙")
+        box = QGroupBox("나누는 기준 — 종별마다 한 줄. 보통은 고칠 필요가 없습니다")
         inner = QVBoxLayout(box)
         self._table = QTableWidget(0, len(RULE_COLUMNS))
         self._table.setHorizontalHeaderLabels(RULE_COLUMNS)
@@ -93,10 +103,9 @@ class DivisionView(QWidget):
         self._fit_columns()
         self._table.setMinimumHeight(RULE_ROW_HEIGHT * (VISIBLE_RULE_ROWS + 1))
         inner.addWidget(self._table)
-        apply, clear = button("부문 나누기", primary=True), button("규칙 모두 지우기")
-        apply.clicked.connect(self._apply)
-        clear.clicked.connect(lambda: self._table.setRowCount(0))
-        inner.addLayout(button_row(apply, clear))
+        clear = button("기준 모두 지우기")
+        clear.clicked.connect(self._clear_rules)
+        inner.addLayout(button_row(clear))
         return box
 
     def _fit_columns(self) -> None:
@@ -120,7 +129,20 @@ class DivisionView(QWidget):
         for rule in self._session.tournament.rules:
             self._append_row(rule)
         self._fit_columns()
+        self._show_rule_count()
         self._show_result()
+
+    def _toggle_rules(self) -> None:
+        self._rules.setVisible(not self._rules.isVisible())
+        self._show_rule_count()
+
+    def _clear_rules(self) -> None:
+        self._table.setRowCount(0)
+        self._show_rule_count()
+
+    def _show_rule_count(self) -> None:
+        shown = self._rules.isVisible()
+        self._rules_toggle.setText(HIDE_RULES if shown else SHOW_RULES.format(count=self._table.rowCount()))
 
     def _append_row(self, rule: DivisionRule) -> None:
         row = self._table.rowCount()
@@ -145,6 +167,7 @@ class DivisionView(QWidget):
         for row in range(self._table.rowCount()):
             if self._table.cellWidget(row, EVENT) is event_combo:
                 self._table.removeRow(row)
+                self._show_rule_count()
                 return
 
     def _rules_in_table(self) -> list[DivisionRule]:
@@ -187,6 +210,7 @@ class DivisionView(QWidget):
         for rule in make_rules(choice, existing, tournament.teams, tournament.participants):
             self._append_row(rule)
         self._fit_columns()
+        self._show_rule_count()
 
     def _apply(self) -> None:
         try:
@@ -214,7 +238,7 @@ class DivisionView(QWidget):
     def _edit(self, change: Callable[[list[str]], DivisionResult], labels: list[str]) -> bool:
         """나뉜 부문을 손으로 고치고 표·목록을 새로 그린다. 고쳤으면 True."""
         if not labels:
-            self._result.notify("목록에서 부문을 먼저 골라 주세요.")
+            self._result.notify("목록에서 종별을 먼저 골라 주세요.")
             return False
         try:
             change(labels)

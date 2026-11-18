@@ -51,7 +51,7 @@ def _cuts(category: Category, rule: DivisionRule) -> bool:
 
 
 def _notice(label: str, rule: DivisionRule | None, count: int) -> str:
-    head = f"「{label}」 {count}명: 신청서에 학년이 함께 적혀 있어 학년별 부문으로 나눌 수 없습니다."
+    head = f"「{label}」 {count}명: 신청서에 학년이 함께 적혀 있어 학년별 종별으로 나눌 수 없습니다."
     if rule is not None:
         return f"{head} 「{rule.label}」에 넣었습니다. 나누려면 명단에서 선수마다 나이를 적어 주세요."
-    return f"{head} 들어갈 부문이 없어 빠졌습니다. 이 범위의 규칙을 더하거나 명단에서 선수마다 나이를 적어 주세요."
+    return f"{head} 들어갈 종별이 없어 빠졌습니다. 이 범위의 기준을 더하거나 명단에서 선수마다 나이를 적어 주세요."

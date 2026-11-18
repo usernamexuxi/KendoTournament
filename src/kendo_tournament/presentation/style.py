@@ -45,6 +45,7 @@ QListWidget#steps::item:hover {{ background: {ACCENT_DARK}; }}
 QListWidget#steps::item:selected {{ background: {SURFACE}; color: {ACCENT}; font-weight: bold; border-left: 5px solid {ACCENT_DARK}; }}
 QLabel#pageTitle {{ font-size: {TITLE_PT}pt; font-weight: bold; color: {ACCENT_DARK}; }}
 QLabel#hint {{ color: {MUTED}; line-height: 150%; }}
+QLabel#pickHint {{ color: {INK}; background: {SELECTED}; border-radius: 6px; padding: 10px 14px; font-weight: bold; }}
 QLabel#warning {{ color: {WARN}; background: {WARN_SOFT}; border: 1px solid #f1c48a; border-radius: 6px; padding: 10px 14px; }}
 QGroupBox {{ background: {SURFACE}; border: 1px solid {LINE}; border-radius: 8px; margin-top: 18px; padding: 16px; }}
 QGroupBox::title {{ subcontrol-origin: margin; left: 12px; padding: 0 6px; color: {ACCENT}; font-weight: bold; }}

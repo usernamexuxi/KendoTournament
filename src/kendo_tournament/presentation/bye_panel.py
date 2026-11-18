@@ -11,10 +11,10 @@ from PySide6.QtWidgets import QGridLayout, QGroupBox, QLabel, QVBoxLayout, QWidg
 from kendo_tournament.domain.division.bye_notice import ByeReport, MergeAdvice
 from kendo_tournament.presentation.widgets import button, button_row
 
-NO_BYES = "부전승이 생기는 부문이 없습니다. 모든 부문이 1회전부터 빠짐없이 경기합니다."
+NO_BYES = "부전승이 생기는 종별이 없습니다. 모든 종별이 1회전부터 빠짐없이 경기합니다."
 WHY = "부전승은 인원이 2·4·8·16·32명이 아니면 생깁니다. 아래 추천대로 이웃 학년과 합치면 부전승이 줄어듭니다."
-KEEP_HEAD = "그대로 두어도 되는 부문 (이웃과 합쳐도 부전승이 줄지 않음)"
-NO_MERGE = "합쳐서 부전승이 주는 부문이 없습니다. 그대로 진행하면 됩니다."
+KEEP_HEAD = "그대로 두어도 되는 종별 (이웃과 합쳐도 부전승이 줄지 않음)"
+NO_MERGE = "합쳐서 부전승이 주는 종별이 없습니다. 그대로 진행하면 됩니다."
 
 
 def _advice_text(advice: MergeAdvice) -> str:

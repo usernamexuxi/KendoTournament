@@ -12,12 +12,9 @@ from kendo_tournament.presentation.bye_panel import ByePanel
 from kendo_tournament.presentation.widgets import button, button_row, show_warnings, warning_label
 
 RESULT_MIN_HEIGHT = 220
-FIX_LABEL = "빠진 선수·팀 부문 만들기"
-EMPTY_RESULT = "「부문 나누기」를 누르면 여기에 부문별 인원이 나옵니다."
-EDIT_HINT = (
-    "인원이 모자라거나 혼자인 부문은 옆 학년과 자동으로 합쳐집니다(단체전 1팀은 합치지 않고 알립니다). "
-    "고치려면 목록에서 부문을 골라(Ctrl 을 누른 채 여러 개) 「합치기」 또는 「학년별로 나누기」를 누르세요."
-)
+FIX_LABEL = "빠진 선수·팀 자리 만들기"
+EMPTY_RESULT = "「선수를 종별로 나누기」를 누르면 여기에 종별마다 몇 명인지 나옵니다."
+EDIT_HINT = "고치려면 목록에서 종별을 누르고(여러 개는 Ctrl 을 누른 채) 아래 단추를 누르세요."
 
 
 class DivisionResultBox(QGroupBox):
@@ -27,7 +24,7 @@ class DivisionResultBox(QGroupBox):
     fix_requested = Signal()
 
     def __init__(self) -> None:
-        super().__init__("나뉜 부문")
+        super().__init__("2. 나뉜 종별")
         self._empty = QLabel(EMPTY_RESULT)
         self._empty.setObjectName("hint")
         self._empty.setWordWrap(True)
@@ -38,7 +35,7 @@ class DivisionResultBox(QGroupBox):
         self._list.setObjectName("divisionResult")
         self._list.setMinimumHeight(RESULT_MIN_HEIGHT)
         self._list.setSelectionMode(QAbstractItemView.SelectionMode.ExtendedSelection)
-        merge, split = button("고른 부문 합치기"), button("학년별로 나누기")
+        merge, split = button("고른 종별 하나로 합치기"), button("학년별로 쪼개기")
         merge.clicked.connect(lambda: self.merge_requested.emit(self.selected_labels()))
         split.clicked.connect(lambda: self.split_requested.emit(self.selected_labels()))
         self._warnings = warning_label()
@@ -82,8 +79,8 @@ def _warning_lines(result: DivisionResult | None) -> list[str]:
         return []
     lines = list(result.warnings)
     if result.unassigned or result.unplaced_teams:
-        lines.append(f"어느 부문에도 들지 못한 곳이 있습니다. 「{FIX_LABEL}」를 누르면 들어갈 부문이 생깁니다.")
+        lines.append(f"어느 종별에도 들지 못한 선수·팀이 있습니다. 「{FIX_LABEL}」를 누르면 들어갈 종별이 생깁니다.")
         lines += unplaced_lines(result)
     if result.multi_assigned:
-        lines.append(f"두 부문 이상에 든 선수 {len(result.multi_assigned)}명 — 규칙 범위가 겹치는지 확인해 주세요.")
+        lines.append(f"두 종별 이상에 든 선수 {len(result.multi_assigned)}명 — 기준의 학년 범위가 겹치는지 확인해 주세요.")
     return lines

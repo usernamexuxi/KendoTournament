@@ -38,7 +38,7 @@ def test_워드_신청서_세장으로_대진표_PDF까지(tmp_path: Path):
     ]
     result = rebuild_divisions(tournament)
     assert [d.label for d in tournament.divisions] == ["남자 초3~초4 개인전", "여자 초3 개인전", "남자 중1~중3 개인전"]
-    assert "합칠 부문이 없습니다" in result.warnings[0]
+    assert "합칠 종별이 없습니다" in result.warnings[0]
 
     brackets = draw_all(tournament)
     male = brackets[0]

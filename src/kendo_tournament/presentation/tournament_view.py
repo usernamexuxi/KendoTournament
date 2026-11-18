@@ -1,4 +1,4 @@
-"""① 대회 설정 화면."""
+"""① 대회 정보 화면."""
 
 from __future__ import annotations
 
@@ -29,7 +29,7 @@ class TournamentView(QWidget):
     def __init__(self, session: TournamentSession) -> None:
         super().__init__()
         self._session = session
-        layout = page_layout(self, "대회 설정", "대회 이름과 날짜, 범위를 정합니다. 바꾼 내용은 바로 대회 파일에 저장됩니다.")
+        layout = page_layout(self, "대회 정보", "대회 이름과 날짜를 적으세요. 적은 내용은 저절로 저장됩니다.")
 
         new_button, open_button, save_as_button = button("새 대회"), button("대회 파일 열기"), button("다른 이름으로 저장")
         new_button.clicked.connect(self._new)

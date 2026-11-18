@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from collections.abc import Sequence
 from dataclasses import replace
+from datetime import datetime
 from pathlib import Path
 
 from kendo_tournament.application.draw_brackets import draw_division, pending_changes, rebuild_divisions
@@ -43,6 +44,7 @@ class TournamentSession:
         self.path: Path | None = None
         self.last_division_result: DivisionResult | None = None
         self.excluded_labels: set[str] = set()
+        self.saved_at: datetime | None = None
 
     def new(self, name: str) -> None:
         self.tournament = Tournament(name.strip() or "새 대회")
@@ -54,10 +56,12 @@ class TournamentSession:
         self.tournament = self._repository.load(path)
         self.path = path
         self.last_division_result = None
+        self.saved_at = None
 
     def save_as(self, path: Path) -> None:
         self.path = path
         self._repository.save(self.tournament, path)
+        self.saved_at = datetime.now().astimezone()
 
     @property
     def save_dir(self) -> Path:
@@ -80,6 +84,7 @@ class TournamentSession:
         if self.path is None:
             self.path = self.default_path()
         self._repository.save(self.tournament, self.path)
+        self.saved_at = datetime.now().astimezone()
 
     def update_settings(self, **changes) -> None:
         for key, value in changes.items():
@@ -236,7 +241,7 @@ class TournamentSession:
     def _require(self, label: str) -> Bracket:
         bracket = self.tournament.brackets.get(label)
         if bracket is None:
-            raise KeyError(f"{label} 부문은 아직 대진을 짜지 않았습니다.")
+            raise KeyError(f"{label} 종별은 아직 대진을 짜지 않았습니다.")
         return bracket
 
     def print_pages(self, labels: Sequence[str], first_page: int = 1) -> list[PageLayout]:

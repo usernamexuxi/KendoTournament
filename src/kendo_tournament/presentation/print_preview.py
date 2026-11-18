@@ -9,7 +9,7 @@ from kendo_tournament.domain.layout.bracket_layout import PageLayout
 from kendo_tournament.presentation.bracket_canvas import BracketCanvas
 from kendo_tournament.presentation.widgets import button
 
-EMPTY_PREVIEW = "왼쪽에서 부문을 체크하면 인쇄될 모양이 여기 나옵니다."
+EMPTY_PREVIEW = "왼쪽에서 종별에 체크하면 인쇄될 모양이 여기 나옵니다."
 
 
 class PrintPreview(QGroupBox):

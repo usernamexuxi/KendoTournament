@@ -50,19 +50,16 @@ class ValueCombo(QComboBox):
             self.setCurrentIndex(index)
 
 
-PRESET_NOTE = (
-    "위 「대회 종별 표」의 종별마다 규칙이 하나씩 생깁니다. 신청서에만 있는 다른 종별도 뒤에 붙습니다. "
-    "표에 안 드는 선수·팀은 「부문 나누기」 뒤 「빠진 선수·팀 부문 만들기」로 넣습니다."
-)
+PRESET_NOTE = "위 「대회 종별 표」의 종별마다 기준이 한 줄씩 생깁니다. 신청서에만 있는 종별도 뒤에 붙습니다."
 
 
 class PresetBox(QGroupBox):
-    """종목과 인원 기준을 고르고 「규칙 추가」를 누르면 preset_requested 로 보낸다. 종별은 대회 종별 표가 정한다."""
+    """종목과 합칠 인원을 고르고 「기준 채우기」를 누르면 preset_requested 로 보낸다. 종별은 대회 종별 표가 정한다."""
 
     preset_requested = Signal(object)
 
     def __init__(self) -> None:
-        super().__init__("빠른 설정 — 종별 표대로 「규칙 추가」")
+        super().__init__("1. 종별 표대로 기준 채우기")
         self._events = {event: QCheckBox(event.value) for event in Event}
         for checkbox in self._events.values():
             checkbox.setChecked(True)
@@ -70,14 +67,14 @@ class PresetBox(QGroupBox):
         note = QLabel(PRESET_NOTE)
         note.setObjectName("hint")
         note.setWordWrap(True)
-        add = button("규칙 추가", primary=True)
+        add = button("기준 채우기", primary=True)
         add.clicked.connect(lambda: self.preset_requested.emit(self.choice()))
         grid = QGridLayout(self)
         grid.setHorizontalSpacing(18)
         grid.setVerticalSpacing(10)
         grid.addWidget(QLabel("종목"), 0, 0)
         grid.addLayout(_line(*self._events.values()), 0, 1)
-        options = _line(QLabel("인원이"), self._minimum, QLabel("이면 옆 학년과 합침 (혼자인 부문은 늘 합침)"))
+        options = _line(QLabel("인원이"), self._minimum, QLabel("이면 옆 학년과 합침 (혼자인 종별은 늘 합침)"))
         options.addWidget(add)
         grid.addWidget(QLabel("합치기"), 1, 0)
         grid.addLayout(options, 1, 1)
