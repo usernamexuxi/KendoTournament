@@ -1,16 +1,17 @@
 """화면 색·간격·글자 크기 토큰과 스타일시트. 모양을 바꾸려면 이 파일만 고친다.
 
 쓰는 분이 나이가 있는 운영자라(개발자 지시) 글자를 크게, 대비를 높게, 누를 곳을 넓게 잡았다.
-색은 파란색과 흰색 두 가지를 중심으로 쓴다.
+운영자 요청(「웹처럼 깔끔하게」, 왼쪽 메뉴는 유지): 흰 바탕에 얇은 선, 파란색은 고른 단계·주 단추·제목 띠에만 쓴다.
 """
 
 from __future__ import annotations
 
 INK = "#14213d"
 MUTED = "#4a5a70"
-LINE = "#c9d6e8"
+LINE = "#d5dde8"
 SURFACE = "#ffffff"
-CANVAS = "#f2f6fc"
+CANVAS = "#f5f7fa"
+HOVER = "#eef3fa"
 ACCENT = "#1652a8"
 ACCENT_DARK = "#0f3d80"
 ACCENT_SOFT = "#e3edfb"
@@ -34,40 +35,43 @@ STEP_PT = 14
 STYLESHEET = f"""
 * {{ font-family: '{FONT_FAMILY}'; font-size: {BASE_PT}pt; color: {INK}; }}
 QMainWindow, QWidget#page {{ background: {CANVAS}; }}
-QWidget#sidebar {{ background: {ACCENT}; }}
+QWidget#sidebar {{ background: {SURFACE}; border-right: 1px solid {LINE}; }}
 QFileDialog QWidget#sidebar {{ background: {SURFACE}; border: 1px solid {LINE}; }}
 QFileDialog QAbstractItemView::item:hover {{ background: {CANVAS}; }}
 QFileDialog QAbstractItemView::item:selected,
 QFileDialog QAbstractItemView::item:selected:!active {{ background: {PICKED_ROW}; color: {INK}; }}
-QLabel#appTitle {{ color: white; font-size: {STEP_PT + 2}pt; font-weight: bold; padding: 22px 18px 18px 18px; }}
-QListWidget#steps {{ background: {ACCENT}; border: none; outline: 0; }}
-QListWidget#steps::item {{ color: white; font-size: {STEP_PT}pt; padding: 16px 18px; border-left: 5px solid transparent; }}
-QListWidget#steps::item:hover {{ background: {ACCENT_DARK}; }}
-QListWidget#steps::item:selected {{ background: {SURFACE}; color: {ACCENT}; font-weight: bold; border-left: 5px solid {ACCENT_DARK}; }}
-QLabel#pageTitle {{ font-size: {TITLE_PT}pt; font-weight: bold; color: {ACCENT_DARK}; }}
+QLabel#appTitle {{ color: {ACCENT}; font-size: {STEP_PT + 3}pt; font-weight: bold; padding: 24px 20px 20px 20px; }}
+QListWidget#steps {{ background: {SURFACE}; border: none; outline: 0; }}
+QListWidget#steps::item {{ color: {INK}; font-size: {STEP_PT}pt; padding: 14px 18px; margin: 2px 10px;
+    border-radius: 8px; border-left: 5px solid transparent; }}
+QListWidget#steps::item:hover {{ background: {HOVER}; }}
+QListWidget#steps::item:selected {{ background: {ACCENT_SOFT}; color: {ACCENT_DARK}; font-weight: bold;
+    border-left: 5px solid {ACCENT}; }}
+QLabel#pageTitle {{ font-size: {TITLE_PT}pt; font-weight: bold; color: {INK}; }}
 QLabel#hint {{ color: {MUTED}; line-height: 150%; }}
-QLabel#emptyState {{ color: {MUTED}; background: {CANVAS}; border: 2px dashed {LINE}; border-radius: 12px;
+QLabel#emptyState {{ color: {MUTED}; background: {SURFACE}; border: 2px dashed {LINE}; border-radius: 12px;
     padding: 40px 24px; font-size: {BASE_PT + 3}pt; font-weight: bold; }}
 QLabel#boardInfo {{ color: {MUTED}; font-size: {BASE_PT + 1}pt; padding: 2px 0; }}
 QLabel#boardTitle {{ color: {INK}; font-size: {BASE_PT + 4}pt; font-weight: bold; }}
 QLabel#pickHint {{ color: {INK}; background: {SELECTED}; border-radius: 6px; padding: 10px 14px; font-weight: bold; }}
 QLabel#warning {{ color: {WARN}; background: {WARN_SOFT}; border: 1px solid #f1c48a; border-radius: 6px; padding: 10px 14px; }}
-QGroupBox {{ background: {SURFACE}; border: 1px solid {LINE}; border-radius: 8px; margin-top: 18px; padding: 16px; }}
-QGroupBox::title {{ subcontrol-origin: margin; left: 12px; padding: 0 6px; color: {ACCENT}; font-weight: bold; }}
-QPushButton {{ background: {SURFACE}; color: {ACCENT}; border: 2px solid {ACCENT}; border-radius: 6px;
-    padding: 9px 20px; min-height: 28px; font-weight: bold; }}
-QPushButton:hover {{ background: {ACCENT_SOFT}; }}
-QPushButton#primary {{ background: {ACCENT}; color: white; }}
+QGroupBox {{ background: {SURFACE}; border: 1px solid {LINE}; border-radius: 12px; margin-top: 22px; padding: 18px; }}
+QGroupBox::title {{ subcontrol-origin: margin; left: 14px; padding: 0 8px; color: {INK}; font-weight: bold;
+    border-left: 4px solid {ACCENT}; }}
+QPushButton {{ background: {SURFACE}; color: {ACCENT_DARK}; border: 1px solid {LINE}; border-radius: 8px;
+    padding: 9px 20px; min-height: 30px; font-weight: bold; }}
+QPushButton:hover {{ background: {HOVER}; border-color: {ACCENT}; }}
+QPushButton#primary {{ background: {ACCENT}; color: white; border: 1px solid {ACCENT}; }}
 QPushButton#primary:hover {{ background: {ACCENT_DARK}; border-color: {ACCENT_DARK}; }}
 QPushButton#help {{ border-radius: 22px; min-width: 44px; max-width: 44px; min-height: 44px; max-height: 44px;
     padding: 0; font-size: {STEP_PT + 4}pt; background: {SURFACE}; color: {ACCENT}; border: 2px solid {ACCENT}; }}
-QTableWidget, QListWidget, QTextBrowser {{ background: {SURFACE}; border: 1px solid {LINE}; border-radius: 6px;
+QTableWidget, QListWidget, QTextBrowser {{ background: {SURFACE}; border: 1px solid {LINE}; border-radius: 10px;
     gridline-color: {LINE}; selection-background-color: {ACCENT_SOFT}; selection-color: {INK}; }}
 QListWidget::item {{ padding: 8px 6px; }}
 QTableWidget::item {{ padding: 6px; }}
-QHeaderView::section {{ background: {ACCENT_SOFT}; color: {ACCENT_DARK}; font-weight: bold; border: none;
+QHeaderView::section {{ background: {CANVAS}; color: {MUTED}; font-weight: bold; border: none;
     border-bottom: 1px solid {LINE}; padding: 8px; }}
-QLineEdit, QComboBox, QSpinBox, QDateEdit {{ background: {SURFACE}; border: 1px solid {LINE}; border-radius: 6px;
+QLineEdit, QComboBox, QSpinBox, QDateEdit {{ background: {SURFACE}; border: 1px solid {LINE}; border-radius: 8px;
     padding: 6px 10px; min-height: 26px; }}
 QLineEdit:focus, QComboBox:focus, QSpinBox:focus, QDateEdit:focus {{ border: 2px solid {ACCENT}; }}
 QCheckBox, QRadioButton {{ spacing: 8px; padding: 4px 10px 4px 0; }}
