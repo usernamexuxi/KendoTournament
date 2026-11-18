@@ -59,6 +59,7 @@ def test_한_쪽에_넣으면_글자가_너무_작아지는_큰_대진은_왼쪽
 
 
 def test_한_쪽에_그린_양쪽_대진은_회전_사이가_넉넉해_번호가_이름에_겹치지_않는다():
+    from kendo_tournament.domain.layout.bracket_boxes import BOX_LINE_PT
     from kendo_tournament.domain.layout.bracket_fit import MIN_ROUND_STEP
     from kendo_tournament.domain.layout.bracket_layout import fits_two_sided
 
@@ -67,7 +68,8 @@ def test_한_쪽에_그린_양쪽_대진은_회전_사이가_넉넉해_번호가
         assert fits_two_sided(bracket, number_matches(bracket).root), count
         pages = layout_bracket(bracket, number_matches(bracket))
         assert len(pages) == 1, count
-        verticals = sorted({round(line.x1, 3) for line in pages[0].lines if line.x1 == line.x2})
+        rounds = [line for line in pages[0].lines if line.x1 == line.x2 and line.width_pt != BOX_LINE_PT]
+        verticals = sorted({round(line.x1, 3) for line in rounds})
         left = [x for x in verticals if x < PAGE_WIDTH / 2]
         assert all(b - a >= MIN_ROUND_STEP - 1e-6 for a, b in zip(left, left[1:], strict=False)), count
 

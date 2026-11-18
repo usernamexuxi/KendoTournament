@@ -16,9 +16,10 @@ from kendo_tournament.domain.draw.numbering import Leaf, MatchNode, Node, Number
 from kendo_tournament.domain.layout.bracket_boxes import (
     NAME_PT,
     BoxNotes,
+    BoxPlace,
     box_height,
-    box_width,
-    draw_entry_number,
+    boxes_width,
+    dojang_column,
     draw_member_line,
     draw_name_box,
 )
@@ -117,20 +118,21 @@ class _Geometry:
     row: float
     font: float
     label_width: float
+    dojang_width: float
 
 
 def _longest_label(bracket: Bracket, leaves: list[Leaf], printed: bool = False) -> float:
     """가장 넓은 이름 상자의 폭(mm)."""
-    return max(box_width(bracket.slots[leaf.slot], BRACKET_FONT_PT, printed) for leaf in leaves)
+    return boxes_width((bracket.slots[leaf.slot] for leaf in leaves), BRACKET_FONT_PT, printed)
 
 
 def _geometry(bracket: Bracket, sides: list[list[Leaf]], frame: Frame, room: float = LABEL_MAX_WIDTH) -> _Geometry:
     """가장 긴 쪽 인원으로 줄 간격을, 가장 긴 이름표로 이름 칸 너비를 정한다. 글자 크기는 고정이다."""
     rows = max(len(side) for side in sides)
     row = min(frame.max_row, frame.height / rows)
-    longest = _longest_label(bracket, [leaf for side in sides for leaf in side])
-    label = min(room, max(LABEL_MIN_WIDTH, min(LABEL_MAX_WIDTH, longest)))
-    return _Geometry(row, BRACKET_FONT_PT, label)
+    every = [leaf for side in sides for leaf in side]
+    label = min(room, max(LABEL_MIN_WIDTH, min(LABEL_MAX_WIDTH, _longest_label(bracket, every))))
+    return _Geometry(row, BRACKET_FONT_PT, label, dojang_column(bracket.slots[leaf.slot] for leaf in every))
 
 
 def _two_sided_room(final: MatchNode) -> float:
@@ -201,12 +203,11 @@ class _Side:
             width = self.geometry.label_width
             left = self.label_edge if self.mirrored else self.label_edge - width
             if entry is not None:
-                box = (left, y, width, box_height(self.geometry.row))
-                draw_name_box(self.page, entry, box, self.mirrored, node.slot)
+                height = box_height(self.geometry.row)
+                place = BoxPlace(left, y, width, height, self.geometry.dojang_width, self.mirrored, node.slot)
+                draw_name_box(self.page, entry, place, self.notes.numbers.get(entry.id))
                 if entry.id in self.notes.members:
-                    draw_member_line(self.page, self.notes.members[entry.id], box)
-                if entry.id in self.notes.numbers:
-                    draw_entry_number(self.page, self.notes.numbers[entry.id], box, self.mirrored)
+                    draw_member_line(self.page, self.notes.members[entry.id], place)
             if anchor is not None and abs(anchor - y) > ANCHOR_TOLERANCE:
                 self.page.lines.append(LineItem(self.label_edge, y, self.label_edge, anchor))
             return self.label_edge, y if anchor is None else anchor
