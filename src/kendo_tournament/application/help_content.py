@@ -25,6 +25,14 @@ class HelpSection:
 
 MANUAL_TITLE = "검도 대진표 프로그램 사용설명서"
 
+# 설명서 PDF 에서 단계마다 맨 위에 싣는 화면 그림(assets/manual). 그림은 scripts/make_manual_shots.py 가 만든다.
+STEP_PICTURES: tuple[str, ...] = tuple(f"step{number}.png" for number in range(1, 7))
+SECTION_PICTURES: dict[str, str] = dict(
+    zip(
+        ("① 대회 정보", "② 선수 명단", "③ 종별 나누기", "④ 대진 짜기", "⑤ 인쇄 순서", "⑥ 책자 만들기"), STEP_PICTURES, strict=True
+    )
+)
+
 SECTIONS: tuple[HelpSection, ...] = (
     HelpSection(
         "한눈에 보기",

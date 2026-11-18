@@ -9,14 +9,16 @@ from reportlab.lib.colors import HexColor
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle
 from reportlab.lib.units import mm
-from reportlab.platypus import ListFlowable, ListItem, Paragraph, SimpleDocTemplate, Spacer
+from reportlab.platypus import Image, KeepTogether, ListFlowable, ListItem, Paragraph, SimpleDocTemplate, Spacer
 
-from kendo_tournament.application.help_content import MANUAL_TITLE, SECTIONS, HelpGroup, emphasized_parts
+from kendo_tournament.application.help_content import MANUAL_TITLE, SECTION_PICTURES, SECTIONS, HelpGroup, emphasized_parts
 from kendo_tournament.infrastructure.exporters.pdf_exporter import BOLD, REGULAR, register_pdf_fonts
 
 NAVY = HexColor("#0f3d80")
 MUTED = HexColor("#4a5a70")
 MARGIN = 18 * mm
+PICTURE_DIR = Path(__file__).resolve().parents[2] / "assets" / "manual"
+PICTURE_GAP = 4 * mm
 BULLET_INDENT = 12
 
 
@@ -56,12 +58,27 @@ def _group(group: HelpGroup) -> list:
     ]
 
 
+def _picture(path: Path) -> Image:
+    """쪽 폭에 맞춘 화면 그림. 그림이 없으면 설치본이 잘못 만들어진 것이라 FileNotFoundError(OSError)로 알린다."""
+    if not path.is_file():
+        raise FileNotFoundError(f"설명서 그림이 없습니다: {path.name}")
+    width = A4[0] - 2 * MARGIN
+    picture = Image(str(path))
+    picture.drawHeight = width * picture.imageHeight / picture.imageWidth
+    picture.drawWidth = width
+    return picture
+
+
 def write_manual(path: Path) -> Path:
     """설명서를 path 에 쓴다. 글꼴이 없으면 FontMissing, 쓸 수 없으면 OSError."""
     register_pdf_fonts()
     story: list = [Paragraph(escape(MANUAL_TITLE), TITLE), Spacer(1, 4 * mm)]
     for section in SECTIONS:
-        story += [Paragraph(escape(section.title), SECTION), Paragraph(escape(section.summary), SUMMARY)]
+        heading = [Paragraph(escape(section.title), SECTION), Paragraph(escape(section.summary), SUMMARY)]
+        if section.title in SECTION_PICTURES:
+            heading += [_picture(PICTURE_DIR / SECTION_PICTURES[section.title]), Spacer(1, PICTURE_GAP)]
+        # 제목과 그림이 다른 쪽으로 갈라지면 어느 화면 그림인지 헷갈린다.
+        story.append(KeepTogether(heading))
         for group in section.groups:
             story += _group(group)
     document = SimpleDocTemplate(
