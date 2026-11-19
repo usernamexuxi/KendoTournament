@@ -1,7 +1,7 @@
 """인쇄 순서와 쪽 묶음 제목(「초등부 남자」)을 정해 책자 쪽을 만든다.
 
 기본 순서는 종목(개인전 먼저, 단체전은 맨 뒤 — 운영자 지시) → 학교급 → 성별 → 학년 → 나이다.
-성별은 개인전·단체전, 모든 학교급에서 여자 먼저다(운영자: 「그냥 여자 경기 먼저 써줘. 다.」).
+성별은 학교급 안에서 남자 먼저다(운영자: 「남자 먼저 하고 여자, 초등부·중등부·고등부·중고등부는 지키고」).
 운영자가 확인 화면에서 순서를 바꾸거나
 「이 부문부터 새 쪽」을 정하면 대회(print_order · page_breaks)에 남는다.
 """
@@ -20,7 +20,7 @@ from kendo_tournament.domain.layout.primitives import PageLayout
 from kendo_tournament.domain.model import Division, DivisionRule, Event, Gender, Grade
 from kendo_tournament.domain.tournament import Tournament
 
-GENDER_ORDER = (Gender.FEMALE, Gender.MALE, None)
+GENDER_ORDER = (Gender.MALE, Gender.FEMALE, None)
 EVENT_ORDER = (Event.INDIVIDUAL, Event.TEAM)
 
 
@@ -93,6 +93,16 @@ def move_in_order(tournament: Tournament, label: str, step: int) -> None:
     if 0 <= target < len(order):
         order[index], order[target] = order[target], order[index]
     tournament.print_order = order
+
+
+def set_print_order(tournament: Tournament, labels: Sequence[str]) -> None:
+    """운영자가 목록에서 끌어 옮겨 정한 순서를 그대로 남긴다. 목록에 없는 부문은 기본 순서로 뒤에 붙는다."""
+    tournament.print_order = list(labels)
+
+
+def reset_print_order(tournament: Tournament) -> None:
+    """운영자가 바꾼 순서를 버리고 기본 순서로 되돌린다."""
+    tournament.print_order = []
 
 
 def toggle_page_break(tournament: Tournament, label: str) -> None:

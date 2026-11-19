@@ -16,6 +16,8 @@ from kendo_tournament.application.print_booklet import (
     booklet_pages,
     move_in_order,
     print_order,
+    reset_print_order,
+    set_print_order,
     toggle_page_break,
 )
 from kendo_tournament.domain.division.builder import DivisionResult
@@ -257,6 +259,14 @@ class TournamentSession:
 
     def move_in_print(self, label: str, step: int) -> None:
         move_in_order(self.tournament, label, step)
+        self._autosave()
+
+    def set_print_order(self, labels: Sequence[str]) -> None:
+        set_print_order(self.tournament, labels)
+        self._autosave()
+
+    def reset_print_order(self) -> None:
+        reset_print_order(self.tournament)
         self._autosave()
 
     def toggle_page_break(self, label: str) -> None:

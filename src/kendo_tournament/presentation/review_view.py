@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QHBoxLayout, QListWidget, QListWidgetItem, QVBoxLayout, QWidget
+from PySide6.QtWidgets import QAbstractItemView, QHBoxLayout, QListWidget, QListWidgetItem, QVBoxLayout, QWidget
 
 from kendo_tournament.application.tournament_session import TournamentSession
 from kendo_tournament.presentation.print_preview import PrintPreview
@@ -18,22 +18,30 @@ class ReviewView(QWidget):
     def __init__(self, session: TournamentSession) -> None:
         super().__init__()
         self._session = session
-        layout = page_layout(self, "인쇄 순서", "인쇄할 종별에 체크가 되어 있는지, 오른쪽 미리보기에서 모양을 확인하세요.")
+        layout = page_layout(
+            self,
+            "인쇄 순서",
+            "인쇄할 종별에 체크가 되어 있는지, 오른쪽 미리보기에서 모양을 확인하세요. 순서는 종별을 끌어 옮겨도 바뀝니다.",
+        )
         check_all, check_none = button("모두 인쇄"), button("모두 빼기")
         check_all.clicked.connect(lambda: self._check(True))
         check_none.clicked.connect(lambda: self._check(False))
         self._list = QListWidget()
         self._list.setObjectName("printList")
         self._list.itemChanged.connect(self._check_changed)
+        self._list.setDragDropMode(QAbstractItemView.DragDropMode.InternalMove)
+        self._list.model().rowsMoved.connect(self._order_dragged)
         up, down, page_break = button("▲ 위로"), button("▼ 아래로"), button("여기부터 새 종이에")
         up.clicked.connect(lambda: self._move(-1))
         down.clicked.connect(lambda: self._move(1))
         page_break.clicked.connect(self._toggle_page_break)
+        reset = button("기본 순서로")
+        reset.clicked.connect(self._reset_order)
         self._message = warning_label()
         choose = QVBoxLayout()
         choose.addLayout(button_row(check_all, check_none))
         choose.addWidget(self._list, 1)
-        choose.addLayout(button_row(up, down, page_break))
+        choose.addLayout(button_row(up, down, page_break, reset))
         choose.addWidget(self._message)
         self._preview = PrintPreview()
         body = QHBoxLayout()
@@ -86,6 +94,16 @@ class ReviewView(QWidget):
             return
         self._session.move_in_print(label, step)
         self.refresh(label)
+
+    def _order_dragged(self) -> None:
+        label = self._current_label()
+        labels = [self._list.item(row).data(Qt.ItemDataRole.UserRole) for row in range(self._list.count())]
+        self._session.set_print_order(labels)
+        self.refresh(label)
+
+    def _reset_order(self) -> None:
+        self._session.reset_print_order()
+        self.refresh(self._current_label())
 
     def _toggle_page_break(self) -> None:
         label = self._current_label()

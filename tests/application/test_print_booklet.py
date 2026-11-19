@@ -3,7 +3,9 @@ from kendo_tournament.application.print_booklet import (
     booklet_pages,
     move_in_order,
     print_order,
+    reset_print_order,
     section_title,
+    set_print_order,
     toggle_page_break,
 )
 from kendo_tournament.domain.model import DivisionRule, Event, Gender, Grade, Participant, Team
@@ -40,12 +42,12 @@ def test_쪽_제목은_학교급과_성별이다():
     assert titles["남자 성인 개인전"] == "성인부 남자"
 
 
-def test_기본_인쇄_순서는_학교급_성별_학년_순이고_여자가_먼저다():
+def test_기본_인쇄_순서는_학교급_성별_학년_순이고_남자가_먼저다():
     assert print_order(tournament()) == [
-        "여자 초1 개인전",
-        "여자 초2 개인전",
         "남자 초1 개인전",
         "남자 초2 개인전",
+        "여자 초1 개인전",
+        "여자 초2 개인전",
         "남자 중1~중3 개인전",
         "남자 성인 개인전",
     ]
@@ -53,13 +55,23 @@ def test_기본_인쇄_순서는_학교급_성별_학년_순이고_여자가_먼
 
 def test_순서를_옮기면_그_순서로_찍히고_새로_생긴_부문은_뒤에_붙는다():
     t = tournament()
-    move_in_order(t, "여자 초2 개인전", -1)
-    assert print_order(t)[:2] == ["여자 초2 개인전", "여자 초1 개인전"]
-    move_in_order(t, "여자 초2 개인전", -1)
-    assert print_order(t)[0] == "여자 초2 개인전"
+    move_in_order(t, "남자 초2 개인전", -1)
+    assert print_order(t)[:2] == ["남자 초2 개인전", "남자 초1 개인전"]
+    move_in_order(t, "남자 초2 개인전", -1)
+    assert print_order(t)[0] == "남자 초2 개인전"
     t.print_order = ["남자 성인 개인전"]
     assert print_order(t)[0] == "남자 성인 개인전"
     assert len(print_order(t)) == len(t.divisions)
+
+
+def test_끌어_옮긴_순서를_그대로_저장하고_기본_순서로_되돌릴_수_있다():
+    t = tournament()
+    default = print_order(t)
+    wanted = [default[-1], *default[:-1]]
+    set_print_order(t, wanted)
+    assert print_order(t) == wanted
+    reset_print_order(t)
+    assert print_order(t) == default
 
 
 def test_새_쪽을_정하면_쪽이_늘고_다시_누르면_풀린다():
@@ -202,23 +214,23 @@ def _catalog_tournament():
     return t
 
 
-def test_기본_인쇄_순서는_어느_학교급이든_여자_종별이_먼저다():
-    """운영자: 「그냥 여자 경기 먼저 써줘. 다.」 — 개인전·단체전, 모든 학교급에서."""
+def test_기본_인쇄_순서는_학교급을_지키고_그_안에서_남자_종별이_먼저다():
+    """운영자: 「남자 먼저 하고 여자. 초등부·중등부·고등부·중고등부는 지키고」 — 개인전·단체전 모두."""
     order = print_order(_catalog_tournament())
     assert order == [
-        "여자 초1~초3 개인전",
         "남자 초1 개인전",
-        "여자 중1~고3 개인전",
+        "여자 초1~초3 개인전",
         "남자 중1~중3 개인전",
+        "여자 중1~고3 개인전",
         "남자 고1~고3 개인전",
-        "여자 성인 개인전",
         "남자 성인 개인전",
-        "여자 초1~초3 단체전",
+        "여자 성인 개인전",
         "남자 초1~초2 단체전",
-        "여자 중1~고3 단체전",
+        "여자 초1~초3 단체전",
         "남자 중1~고3 단체전",
-        "여자 성인 단체전",
+        "여자 중1~고3 단체전",
         "남자 성인 단체전",
+        "여자 성인 단체전",
     ]
 
 
