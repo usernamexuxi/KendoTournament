@@ -37,7 +37,7 @@ MEMBER_COLOR = "#4a4a4a"
 MEMBER_PT = 8.5
 MEMBER_GAP = 0.6
 ENTRY_NUMBER_PT = 9.0
-# 출전 번호는 책자 전체에서 이어지므로 세 자리까지 든다.
+# 출전 번호는 종별마다 1부터 세지만 한 종별이 백 명을 넘을 수도 있어 세 자리까지 든다.
 NUMBER_CELL = 8.0
 ENTRY_NUMBER_COLOR = "#555555"
 EDGE_TOLERANCE = 1e-3
@@ -45,7 +45,7 @@ EDGE_TOLERANCE = 1e-3
 
 @dataclass(frozen=True)
 class BoxNotes:
-    """이름 상자에 덧붙는 것. members 는 팀 칸 id → 팀원 줄, numbers 는 칸 id → 책자 전체에서 이어지는 출전 번호."""
+    """이름 상자에 덧붙는 것. members 는 팀 칸 id → 팀원 줄, numbers 는 칸 id → 종별마다 1부터 세는 출전 번호."""
 
     members: Mapping[str, str] = field(default_factory=dict)
     numbers: Mapping[str, int] = field(default_factory=dict)

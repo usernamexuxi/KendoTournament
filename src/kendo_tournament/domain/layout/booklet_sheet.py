@@ -52,7 +52,7 @@ class BookletItem:
 
     나눈 조각이면 source 가 원래 부문이고, 마지막 조각의 footer 는 조각 우승자끼리 남은 경기들이다.
     members 는 팀 칸 id → 팀원 줄로, 팀 상자 밑에 싣는다(비어 있으면 팀 이름만). is_team 이면 단체전 부문이다.
-    numbers 는 칸 id → 책자 전체에서 이어지는 출전 번호로, 이름 상자 바깥쪽에 쓴다.
+    numbers 는 칸 id → 종별마다 1부터 세는 출전 번호로, 이름 상자 바깥쪽에 쓴다.
     """
 
     section: str

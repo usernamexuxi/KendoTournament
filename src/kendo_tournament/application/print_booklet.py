@@ -1,8 +1,8 @@
 """인쇄 순서와 쪽 묶음 제목(「초등부 남자」)을 정해 책자 쪽을 만든다.
 
 기본 순서는 종목(개인전 먼저, 단체전은 맨 뒤 — 운영자 지시) → 학교급 → 성별 → 학년 → 나이다.
-성별 순서는 운영자가 준 참고 책자(제26회 광명시장기 카탈로그)를 따른다: 개인전은 남자 먼저지만 청소년(중·고)만 여자 먼저,
-단체전은 모든 학교급에서 여자 먼저. 운영자가 확인 화면에서 순서를 바꾸거나
+성별은 개인전·단체전, 모든 학교급에서 여자 먼저다(운영자: 「그냥 여자 경기 먼저 써줘. 다.」).
+운영자가 확인 화면에서 순서를 바꾸거나
 「이 부문부터 새 쪽」을 정하면 대회(print_order · page_breaks)에 남는다.
 """
 
@@ -20,9 +20,7 @@ from kendo_tournament.domain.layout.primitives import PageLayout
 from kendo_tournament.domain.model import Division, DivisionRule, Event, Gender, Grade
 from kendo_tournament.domain.tournament import Tournament
 
-MALE_FIRST = (Gender.MALE, Gender.FEMALE, None)
-FEMALE_FIRST = (Gender.FEMALE, Gender.MALE, None)
-YOUTH_LEVELS = (SchoolLevel.MIDDLE, SchoolLevel.HIGH)
+GENDER_ORDER = (Gender.FEMALE, Gender.MALE, None)
 EVENT_ORDER = (Event.INDIVIDUAL, Event.TEAM)
 
 
@@ -59,12 +57,6 @@ def section_title(tournament: Tournament, division: Division) -> str:
     return " ".join(part for part in parts if part)
 
 
-def _gender_order(event: Event, level: SchoolLevel | None) -> tuple[Gender | None, ...]:
-    if event is Event.TEAM or level in YOUTH_LEVELS:
-        return FEMALE_FIRST
-    return MALE_FIRST
-
-
 def _default_key(tournament: Tournament, division: Division) -> tuple[int, int, int, int, int]:
     rules = _rules_of(tournament, division)
     grade = _lowest_grade(rules)
@@ -74,7 +66,7 @@ def _default_key(tournament: Tournament, division: Division) -> tuple[int, int, 
     return (
         EVENT_ORDER.index(division.event),
         list(SchoolLevel).index(level) if level else len(SchoolLevel),
-        _gender_order(division.event, level).index(gender),
+        GENDER_ORDER.index(gender),
         grade.value if grade else 0,
         youngest,
     )
@@ -114,7 +106,6 @@ def _booklet_items(tournament: Tournament, labels: Sequence[str]) -> list[tuple[
     wanted = set(labels)
     divisions = {division.label: division for division in tournament.divisions}
     items = []
-    counters = {Event.INDIVIDUAL: 0, Event.TEAM: 0}
     for label in print_order(tournament):
         if label not in wanted:
             continue
@@ -125,8 +116,7 @@ def _booklet_items(tournament: Tournament, labels: Sequence[str]) -> list[tuple[
         section = section_title(tournament, divisions[label])
         members = team_member_lines(tournament, bracket) if tournament.book.team_members else {}
         event = divisions[label].event
-        numbers = _entry_numbers(bracket, numbered, counters[event])
-        counters[event] += len(numbers)
+        numbers = _entry_numbers(bracket, numbered)
         item = BookletItem(
             section,
             bracket,
@@ -140,16 +130,17 @@ def _booklet_items(tournament: Tournament, labels: Sequence[str]) -> list[tuple[
     return items
 
 
-def _entry_numbers(bracket: Bracket, numbered: NumberedBracket, start: int) -> dict[str, int]:
-    """칸 id → 출전 번호. 대진표에 그려지는 순서(왼쪽 위→아래, 이어서 오른쪽 위→아래)로 start 다음부터 매긴다.
+def _entry_numbers(bracket: Bracket, numbered: NumberedBracket) -> dict[str, int]:
+    """칸 id → 출전 번호. 대진표에 그려지는 순서(왼쪽 위→아래, 이어서 오른쪽 위→아래)로 1부터 매긴다.
 
-    운영자: 「초등부 첫 경기 아이부터 1~ 이어지는 번호, 개인전·단체전 따로」. 빈 칸(부전승 자리)은 세지 않는다.
+    운영자: 「경기(종별)마다 1부터 다시」 — 여자 초등 1~3학년부가 끝나면 다음 종별은 다시 1번이다.
+    빈 칸(부전승 자리)은 세지 않는다.
     """
     if numbered.root is None:
         return {}
     entries = [bracket.slots[leaf.slot] for leaf in leaves_of(numbered.root)]
     present = [entry for entry in entries if entry is not None]
-    return {entry.id: start + index for index, entry in enumerate(present, start=1)}
+    return {entry.id: index for index, entry in enumerate(present, start=1)}
 
 
 def booklet_pages(tournament: Tournament, labels: Sequence[str], first_page: int = 1) -> list[PageLayout]:

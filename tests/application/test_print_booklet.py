@@ -40,12 +40,12 @@ def test_쪽_제목은_학교급과_성별이다():
     assert titles["남자 성인 개인전"] == "성인부 남자"
 
 
-def test_기본_인쇄_순서는_학교급_성별_학년_순이다():
+def test_기본_인쇄_순서는_학교급_성별_학년_순이고_여자가_먼저다():
     assert print_order(tournament()) == [
-        "남자 초1 개인전",
-        "남자 초2 개인전",
         "여자 초1 개인전",
         "여자 초2 개인전",
+        "남자 초1 개인전",
+        "남자 초2 개인전",
         "남자 중1~중3 개인전",
         "남자 성인 개인전",
     ]
@@ -53,10 +53,10 @@ def test_기본_인쇄_순서는_학교급_성별_학년_순이다():
 
 def test_순서를_옮기면_그_순서로_찍히고_새로_생긴_부문은_뒤에_붙는다():
     t = tournament()
-    move_in_order(t, "남자 초2 개인전", -1)
-    assert print_order(t)[:2] == ["남자 초2 개인전", "남자 초1 개인전"]
-    move_in_order(t, "남자 초2 개인전", -1)
-    assert print_order(t)[0] == "남자 초2 개인전"
+    move_in_order(t, "여자 초2 개인전", -1)
+    assert print_order(t)[:2] == ["여자 초2 개인전", "여자 초1 개인전"]
+    move_in_order(t, "여자 초2 개인전", -1)
+    assert print_order(t)[0] == "여자 초2 개인전"
     t.print_order = ["남자 성인 개인전"]
     assert print_order(t)[0] == "남자 성인 개인전"
     assert len(print_order(t)) == len(t.divisions)
@@ -202,16 +202,17 @@ def _catalog_tournament():
     return t
 
 
-def test_기본_인쇄_순서는_참고_책자를_따른다():
+def test_기본_인쇄_순서는_어느_학교급이든_여자_종별이_먼저다():
+    """운영자: 「그냥 여자 경기 먼저 써줘. 다.」 — 개인전·단체전, 모든 학교급에서."""
     order = print_order(_catalog_tournament())
     assert order == [
-        "남자 초1 개인전",
         "여자 초1~초3 개인전",
+        "남자 초1 개인전",
         "여자 중1~고3 개인전",
         "남자 중1~중3 개인전",
         "남자 고1~고3 개인전",
-        "남자 성인 개인전",
         "여자 성인 개인전",
+        "남자 성인 개인전",
         "여자 초1~초3 단체전",
         "남자 초1~초2 단체전",
         "여자 중1~고3 단체전",
@@ -253,21 +254,25 @@ def _entry_numbers(pages):
     return [int(t.text) for page in pages for t in page.texts if t.color == ENTRY_NUMBER_COLOR]
 
 
-def test_대진표_이름_옆_번호는_인쇄_순서대로_첫_대진부터_빠짐없이_이어진다():
-    """운영자: 초등부 첫 경기 아이부터 1, 2, 3 … 대진표 순서로 이어지는 번호(개인전·단체전 따로)."""
+def _expected_per_division(t, labels):
+    divisions = {d.label: d for d in t.divisions}
+    return [n for label in labels for n in range(1, len(divisions[label].entries) + 1)]
+
+
+def test_대진표_이름_옆_번호는_종별마다_1부터_다시_센다():
+    """운영자: 여자 초등 1~3학년부를 1부터 매기면, 그 뒤 여자 초등 4~6학년부는 다시 1부터."""
     t = tournament()
     labels = print_order(t)
     numbers = _entry_numbers(booklet_pages(t, labels))
-    people = sum(len(d.entries) for d in t.divisions if d.label in labels)
-    assert numbers == list(range(1, people + 1))
+    assert numbers == _expected_per_division(t, labels)
 
 
-def test_단체전_번호는_개인전과_따로_1부터_센다():
+def test_단체전_번호도_종별마다_1부터_센다():
     t = tournament()
     t.teams = [Team("팀1", "도장0 A", "도장0", ("MALE0", "MALE1")), Team("팀2", "도장1 A", "도장1", ("MALE2", "MALE3"))]
     t.rules.append(DivisionRule("단초", Event.TEAM, Gender.MALE, Grade(1), Grade(6), team_size=2))
     rebuild_divisions(t)
     draw_all(t)
-    numbers = _entry_numbers(booklet_pages(t, print_order(t)))
-    individual = sum(len(d.entries) for d in t.divisions if d.event is Event.INDIVIDUAL and d.label in print_order(t))
-    assert numbers == list(range(1, individual + 1)) + [1, 2]
+    labels = print_order(t)
+    numbers = _entry_numbers(booklet_pages(t, labels))
+    assert numbers == _expected_per_division(t, labels)
